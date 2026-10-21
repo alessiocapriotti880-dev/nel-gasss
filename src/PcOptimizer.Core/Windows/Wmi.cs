@@ -2,15 +2,19 @@ using System.Globalization;
 using System.Management;
 using System.Runtime.Versioning;
 
-namespace PcOptimizer.Hardware.Windows;
+namespace PcOptimizer.Core.Windows;
 
 /// <summary>Query WMI in sola lettura; ogni riga diventa un dizionario per non trascinare oggetti COM.</summary>
 [SupportedOSPlatform("windows")]
-internal static class Wmi
+public static class Wmi
 {
     public const string Cimv2 = @"root\cimv2";
     public const string Storage = @"root\Microsoft\Windows\Storage";
     public const string StandardCimv2 = @"root\StandardCimv2";
+    public const string DeviceGuard = @"root\Microsoft\Windows\DeviceGuard";
+    public const string Defender = @"root\Microsoft\Windows\Defender";
+    public const string SecurityCenter = @"root\SecurityCenter2";
+    public const string Tpm = @"root\CIMV2\Security\MicrosoftTpm";
 
     public static List<Dictionary<string, object?>> Query(string scope, string query)
     {
@@ -58,6 +62,15 @@ internal static class Wmi
 
     public static int? Int(this IReadOnlyDictionary<string, object?> row, string name) =>
         row.Long(name) is { } v and >= int.MinValue and <= int.MaxValue ? (int)v : null;
+
+    public static bool? Bool(this IReadOnlyDictionary<string, object?> row, string name) =>
+        row.TryGetValue(name, out var value) && value is bool b ? b : null;
+
+    /// <summary>Array numerico WMI (es. uint32[]) come lista di interi.</summary>
+    public static IReadOnlyList<long> Numbers(this IReadOnlyDictionary<string, object?> row, string name) =>
+        row.TryGetValue(name, out var value) && value is Array array
+            ? array.Cast<object>().Select(v => Convert.ToInt64(v, CultureInfo.InvariantCulture)).ToList()
+            : [];
 
     /// <summary>Data CIM ("20240509000000.000000-000") convertita in DateTime.</summary>
     public static DateTime? CimDate(this IReadOnlyDictionary<string, object?> row, string name)

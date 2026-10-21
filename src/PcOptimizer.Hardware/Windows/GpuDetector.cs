@@ -1,5 +1,6 @@
 using System.Runtime.Versioning;
 using Microsoft.Win32;
+using PcOptimizer.Core.Windows;
 using PcOptimizer.Hardware.Model;
 using PcOptimizer.Hardware.Parsing;
 

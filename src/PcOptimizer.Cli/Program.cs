@@ -3,21 +3,27 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using PcOptimizer.Analysis;
+using PcOptimizer.Analysis.Catalog;
+using PcOptimizer.Analysis.Evaluation;
+using PcOptimizer.Analysis.Windows;
+using PcOptimizer.Cli;
 using PcOptimizer.Core;
 using PcOptimizer.Core.Logging;
-using PcOptimizer.Core.Model;
 using PcOptimizer.Hardware.Assessment;
 using PcOptimizer.Hardware.Database;
-using PcOptimizer.Hardware.Model;
 using PcOptimizer.Hardware.Windows;
 
 Console.OutputEncoding = Encoding.UTF8;
 
 var command = args.FirstOrDefault()?.ToLowerInvariant() ?? "scan";
+var options = args.Skip(1).ToArray();
 switch (command)
 {
     case "scan":
-        return await ScanAsync(args.Skip(1).ToArray());
+        return await ScanAsync(options);
+    case "analyze":
+        return await AnalyzeAsync(options);
     case "help" or "--help" or "-h" or "/?":
         PrintHelp();
         return 0;
@@ -30,47 +36,81 @@ switch (command)
 static void PrintHelp()
 {
     Console.WriteLine("""
-        PC Optimizer Pro - strumento a riga di comando
+        PC Optimizer Pro - strumento a riga di comando (sola lettura: non modifica nulla)
 
         pcopt scan [--json <file>] [--data <cartella>]
-            Rileva l'hardware, calcola la fascia e mostra le osservazioni. Non modifica nulla.
-            --json   salva profilo e valutazione completi in un file JSON (utile per segnalazioni)
-            --data   cartella con tabelle aggiornate (cpu-architectures.json, gpus.json, ...)
+            Rileva l'hardware, calcola la fascia e mostra le osservazioni.
+
+        pcopt analyze [--json <file>] [--data <cartella>]
+            Analizza la configurazione di Windows: servizi, avvio, attività, driver, alimentazione,
+            timer, interrupt, impostazioni di gioco, sicurezza e modifiche lasciate da altri ottimizzatori.
+            Per il quadro completo va eseguito come amministratore.
+
+            --json   salva tutti i dati raccolti e la valutazione in un file JSON
+            --data   cartella con tabelle aggiornate (cpu-architectures.json, gpus.json, known-software.json, ...)
         """);
 }
 
 static async Task<int> ScanAsync(string[] options)
 {
-    string? Option(string name)
-    {
-        var i = Array.FindIndex(options, o => o.Equals(name, StringComparison.OrdinalIgnoreCase));
-        return i >= 0 && i + 1 < options.Length ? options[i + 1] : null;
-    }
-
     using var loggerFactory = CreateLoggerFactory();
-    var dataDirs = new[] { Option("--data"), Path.Combine(AppContext.BaseDirectory, "data") }
+    Console.WriteLine("Scansione dell'hardware in corso...");
+    var profile = await new WindowsHardwareScanner(loggerFactory.CreateLogger<WindowsHardwareScanner>()).ScanAsync();
+    var assessment = new HardwareAnalyzer(HardwareDatabase.Load(DataDirectories(options))).Assess(profile);
+
+    HardwareReportPrinter.Print(profile, assessment);
+    await SaveJsonAsync(options, new { profile, assessment });
+    return 0;
+}
+
+static async Task<int> AnalyzeAsync(string[] options)
+{
+    using var loggerFactory = CreateLoggerFactory();
+    var dataDirs = DataDirectories(options);
+
+    Console.WriteLine("Scansione dell'hardware in corso...");
+    var hardware = await new WindowsHardwareScanner(loggerFactory.CreateLogger<WindowsHardwareScanner>()).ScanAsync();
+    var hardwareAssessment = new HardwareAnalyzer(HardwareDatabase.Load(dataDirs)).Assess(hardware);
+
+    Console.WriteLine("Analisi della configurazione di Windows in corso...");
+    var snapshot = await new WindowsSystemCollector(loggerFactory.CreateLogger<WindowsSystemCollector>()).CollectAsync();
+    var report = new SystemAnalyzer(KnownSoftwareCatalog.Load(dataDirs))
+        .Analyze(snapshot, AnalysisContext.From(hardware, hardwareAssessment));
+
+    ConsoleOutput.Heading("Analisi del sistema");
+    ConsoleOutput.Line("Fascia", $"{TierClassifier.TierName(hardwareAssessment.Tier.Tier)} " +
+                                   $"(punteggio {ConsoleOutput.Num(hardwareAssessment.Tier.Score)}/100: dettagli con \"pcopt scan\")");
+    SystemReportPrinter.Print(snapshot, report);
+    await SaveJsonAsync(options, new { hardware, hardwareAssessment, snapshot, report });
+    return 0;
+}
+
+static string[] DataDirectories(string[] options) =>
+    new[] { Option(options, "--data"), Path.Combine(AppContext.BaseDirectory, "data") }
         .Where(d => d is not null)
         .Select(d => d!)
         .ToArray();
 
-    Console.WriteLine("Scansione dell'hardware in corso...");
-    var profile = await new WindowsHardwareScanner(loggerFactory.CreateLogger<WindowsHardwareScanner>()).ScanAsync();
-    var assessment = new HardwareAnalyzer(HardwareDatabase.Load(dataDirs)).Assess(profile);
+static string? Option(string[] options, string name)
+{
+    var i = Array.FindIndex(options, o => o.Equals(name, StringComparison.OrdinalIgnoreCase));
+    return i >= 0 && i + 1 < options.Length ? options[i + 1] : null;
+}
 
-    Report.Print(profile, assessment);
-
-    if (Option("--json") is { } jsonPath)
+static async Task SaveJsonAsync(string[] options, object data)
+{
+    if (Option(options, "--json") is not { } path)
     {
-        var json = JsonSerializer.Serialize(new { profile, assessment }, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            Converters = { new JsonStringEnumConverter() },
-        });
-        await File.WriteAllTextAsync(jsonPath, json);
-        Console.WriteLine($"\nReport completo salvato in {Path.GetFullPath(jsonPath)}");
+        return;
     }
 
-    return 0;
+    var json = JsonSerializer.Serialize(data, new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() },
+    });
+    await File.WriteAllTextAsync(path, json);
+    Console.WriteLine($"\nReport completo salvato in {Path.GetFullPath(path)}");
 }
 
 static ILoggerFactory CreateLoggerFactory()
@@ -84,135 +124,4 @@ static ILoggerFactory CreateLoggerFactory()
         Console.Error.WriteLine($"Log su file non disponibile: {ex.Message}");
         return NullLoggerFactory.Instance;
     }
-}
-
-/// <summary>Stampa leggibile del profilo e della valutazione.</summary>
-internal static class Report
-{
-    private const double GiB = 1024.0 * 1024 * 1024;
-
-    public static void Print(HardwareProfile p, HardwareAssessment a)
-    {
-        var t = a.Tier;
-        Console.WriteLine();
-        Heading($"Fascia: {TierClassifier.TierName(t.Tier).ToUpperInvariant()}  " +
-                $"(punteggio {Num(t.Score)}/100, affidabilità {ConfidenceName(t.Confidence)})");
-        foreach (var c in t.Components)
-        {
-            Console.WriteLine($"  {c.Component,-6} {c.Score,5:0}  peso {Num(c.Weight, "0.00")}  {c.Explanation}");
-        }
-
-        foreach (var cap in t.AppliedCaps)
-        {
-            Console.WriteLine($"  Limite: {cap}");
-        }
-
-        Console.WriteLine();
-        Heading("Componenti");
-        var cpu = p.Cpu;
-        Line("CPU", cpu.BrandString);
-        Line("", $"{a.Cpu.ArchitectureName}, {a.Cpu.Generation}; famiglia 0x{cpu.Family:X} modello 0x{cpu.Model:X} " +
-                 $"stepping {cpu.Stepping}, microcode {(cpu.MicrocodeRevision is { } mc ? $"0x{mc:X}" : "n/d")}");
-
-        foreach (var g in a.Gpus)
-        {
-            var vram = g.Gpu.DedicatedMemoryBytes is { } bytes ? $"{Num(bytes / GiB)} GB, " : "";
-            var driver = g.Gpu.VendorDriverVersion ?? g.Gpu.DriverVersion ?? "n/d";
-            var date = g.Gpu.DriverDate is { } d ? $" del {d:dd/MM/yyyy}" : "";
-            var role = g == a.PrimaryGpu ? " [principale]" : g.IsVirtual ? " [virtuale]" : g.IsIntegrated ? " [integrata]" : "";
-            Line("GPU", $"{g.Gpu.Name}{role}: {vram}driver {driver}{date}");
-        }
-
-        var m = a.Memory;
-        var channels = m.Channels is { } ch ? $"{ch} {(ch == 1 ? "canale" : "canali")}{(m.ChannelsAssumed ? " (stimato)" : "")}" : "canali n/d";
-        var type = m.Type == MemoryType.Unknown ? "" : $" {m.Type.ToString().ToUpperInvariant()}";
-        var dataRate = m.ConfiguredMTs is { } mts ? $"{mts} MT/s" : "velocità n/d";
-        Line("RAM", $"{Num(m.InstalledGB)} GB{type}, {dataRate}, {m.ModuleCount} moduli, {channels}");
-        Line("", $"XMP/EXPO: {m.XmpExplanation}");
-
-        foreach (var disk in p.Disks)
-        {
-            Line("Disco", $"{disk.FriendlyName}: {Num(disk.SizeBytes / GiB, "0")} GB, {disk.MediaType}/{disk.BusType}, " +
-                          $"salute {disk.Health}{(disk.IsSystemDisk ? " [sistema]" : "")}");
-        }
-
-        var b = p.Board;
-        var chipset = a.Board.Chipset is { } cs
-            ? $", chipset {cs} (OC CPU: {OcName(a.Board.CpuOverclock)}, OC RAM: {OcName(a.Board.MemoryOverclock)})"
-            : "";
-        Line("Scheda", $"{b.BoardManufacturer} {b.BoardProduct}{chipset}{(b.IsLaptop ? " [portatile]" : "")}");
-        Line("BIOS", $"{b.BiosVendor} {b.BiosVersion}{(b.BiosReleaseDate is { } bd ? $" del {bd:dd/MM/yyyy}" : "")}, " +
-                     $"{b.Firmware}, Secure Boot {(b.SecureBootEnabled switch { true => "attivo", false => "disattivo", _ => "n/d" })}");
-
-        foreach (var n in p.NetworkAdapters.Where(n => n.IsConnected))
-        {
-            var speed = n.LinkSpeedBps is { } bps ? $" {bps / 1_000_000} Mbps" : "";
-            Line("Rete", $"{n.Description}: {n.Medium}{speed}{(n.IsPrimary ? " [principale]" : "")}");
-        }
-
-        foreach (var d in p.Displays)
-        {
-            var max = d.MaxRefreshHz is { } mx ? $" (max {mx} Hz)" : "";
-            var hz = d.RefreshHz > 0 ? $"{Num(d.RefreshHz, "0.##")} Hz" : "frequenza n/d";
-            Line("Monitor", $"{d.Name}: {d.Width}x{d.Height} a {hz}{max}, {d.Connection}" +
-                            $"{(d.IsPrimary ? " [principale]" : "")}");
-        }
-
-        Line("Sistema", $"{p.Os.FriendlyName} {p.Os.DisplayVersion} (build {p.Os.Build}.{p.Os.Ubr})");
-
-        Console.WriteLine();
-        Heading(a.Findings.Count == 0 ? "Nessuna osservazione" : $"Osservazioni ({a.Findings.Count})");
-        foreach (var f in a.Findings)
-        {
-            var previous = Console.ForegroundColor;
-            Console.ForegroundColor = f.Severity switch
-            {
-                FindingSeverity.Critical => ConsoleColor.Red,
-                FindingSeverity.Warning => ConsoleColor.Yellow,
-                FindingSeverity.Suggestion => ConsoleColor.Cyan,
-                _ => ConsoleColor.Gray,
-            };
-            Console.WriteLine($"  [{SeverityName(f.Severity)}] {f.Title}");
-            Console.ForegroundColor = previous;
-            Console.WriteLine($"      {f.Detail}");
-            if (f.Recommendation is not null)
-            {
-                Console.WriteLine($"      → {f.Recommendation}");
-            }
-        }
-    }
-
-    private static void Heading(string text)
-    {
-        Console.WriteLine(text);
-        Console.WriteLine(new string('-', Math.Min(text.Length, 100)));
-    }
-
-    private static void Line(string label, string text) => Console.WriteLine($"  {label,-8} {text}");
-
-    private static string Num(double value, string format = "0.#") =>
-        value.ToString(format, System.Globalization.CultureInfo.InvariantCulture).Replace('.', ',');
-
-    private static string SeverityName(FindingSeverity s) => s switch
-    {
-        FindingSeverity.Critical => "CRITICO",
-        FindingSeverity.Warning => "ATTENZIONE",
-        FindingSeverity.Suggestion => "CONSIGLIO",
-        _ => "INFO",
-    };
-
-    private static string ConfidenceName(Confidence c) => c switch
-    {
-        Confidence.High => "alta",
-        Confidence.Medium => "media",
-        _ => "bassa",
-    };
-
-    private static string OcName(OcSupport s) => s switch
-    {
-        OcSupport.Yes => "sì",
-        OcSupport.No => "no",
-        OcSupport.Limited => "limitato",
-        _ => "n/d",
-    };
 }

@@ -14,6 +14,7 @@
   <ItemGroup>
     <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
     <ProjectReference Include="..\PcOptimizer.Hardware\PcOptimizer.Hardware.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Analysis\PcOptimizer.Analysis.csproj" />
   </ItemGroup>
 
 </Project>

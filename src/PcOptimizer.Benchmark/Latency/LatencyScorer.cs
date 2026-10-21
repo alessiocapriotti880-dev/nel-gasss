@@ -8,6 +8,7 @@ namespace PcOptimizer.Benchmark.Latency;
 /// logaritmica, perché le latenze si distribuiscono su ordini di grandezza. Soglie dalle indicazioni comuni
 /// per l'audio in tempo reale e il gioco (LatencyMon: DPC/ISR sotto 500 µs accettabili, oltre 1000 µs problemi).
 /// Per i DPC/ISR si usa il 95° percentile dei massimi per secondo: un singolo picco non decide il punteggio.
+/// Per il timer conta la variabilità (P99 meno mediana) del ritardo di risveglio.
 /// </summary>
 public static class LatencyScorer
 {
@@ -23,7 +24,9 @@ public static class LatencyScorer
 
         if (timer is not null && timer.Samples > 0)
         {
-            components.Add(Component("Ritardo del timer (P99)", timer.LatenessUs.P99, "µs", 50, 2000, 0.35));
+            // Variabilità e non ritardo assoluto: il ritardo minimo dipende dalla granularità del timer della piattaforma
+            // (costante, non migliorabile), mentre le code oltre la mediana sono interferenze di DPC, energia e carico.
+            components.Add(Component("Variabilità del risveglio (P99 - mediana)", timer.LatenessUs.P99 - timer.LatenessUs.Median, "µs", 20, 1000, 0.35));
         }
 
         if (components.Count == 0)

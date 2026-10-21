@@ -49,9 +49,9 @@ internal static class BenchmarkReportPrinter
             Line("CPU", $"uso medio {Num(cpu.Busy.Mean, "0.#")}%, massimo {Num(cpu.Busy.Max, "0")}%; processi più attivi: {(top.Length > 0 ? top : "nessuno")}");
         }
 
-        if (run.Sensors is { Samples.Count: > 0 } s)
+        if (run.Sensors is { Samples.Count: > 0, Sources.Count: > 0 } s)
         {
-            Line("Sensori", $"fonti: {string.Join(", ", s.Sources)}; CPU max {Temp(s.CpuTempMaxC)}, potenza media {Watt(s.CpuPowerAvgW)}; " +
+            Line("Sensori", $"fonti: {(s.Sources.Count > 0 ? string.Join(", ", s.Sources) : "nessuna")}; CPU max {Temp(s.CpuTempMaxC)}, potenza media {Watt(s.CpuPowerAvgW)}; " +
                             $"GPU max {Temp(s.GpuTempMaxC)}, potenza media {Watt(s.GpuPowerAvgW)}, frequenza media {(s.GpuClockAvgMHz is { } c ? Num(c, "0") + " MHz" : "n/d")}");
         }
 

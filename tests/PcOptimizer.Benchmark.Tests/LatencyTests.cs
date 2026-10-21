@@ -112,7 +112,7 @@ public class LatencyTests
         var timer = new Model.TimerLatencyResult
         {
             Samples = 100,
-            LatenessUs = new Statistics.SampleSummary(100, 30, 25, 40, 50, 0, 60, 5),
+            LatenessUs = new Statistics.SampleSummary(100, 30, 45, 48, 50, 0, 60, 5),
         };
 
         var score = LatencyScorer.Compute(null, timer);
@@ -132,7 +132,7 @@ public class LatencyTests
             WindowMaxIsrUs = Enumerable.Repeat(10.0, 20).ToArray(),
             WindowLoadPercent = Enumerable.Repeat(0.1, 20).ToArray(),
         };
-        var timer = new Model.TimerLatencyResult { Samples = 100, LatenessUs = new Statistics.SampleSummary(100, 0, 0, 0, 40, 0, 0, 0) };
+        var timer = new Model.TimerLatencyResult { Samples = 100, LatenessUs = new Statistics.SampleSummary(100, 0, 500, 0, 515, 0, 0, 0) };
 
         var score = LatencyScorer.Compute(dpc, timer)!;
 

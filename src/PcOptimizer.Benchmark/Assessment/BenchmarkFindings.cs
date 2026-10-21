@@ -112,11 +112,13 @@ public static class BenchmarkFindings
             return;
         }
 
-        if (timer.LatenessUs.P99 > 1000)
+        var jitter = timer.LatenessUs.P99 - timer.LatenessUs.Median;
+        if (jitter > 500)
         {
             findings.Add(new Finding("bench-timer-late", FindingSeverity.Warning, "Latenza",
-                "Risveglio dei thread in ritardo",
-                $"Nell'1% dei casi un thread ad alta priorità riparte con oltre {Num(timer.LatenessUs.P99, "0")} µs di ritardo (massimo {Num(timer.LatenessUs.Max, "0")} µs). " +
+                "Risveglio dei thread irregolare",
+                $"Nell'1% dei casi un thread ad alta priorità riparte con {Num(jitter, "0")} µs di ritardo in più rispetto al solito " +
+                $"(mediana {Num(timer.LatenessUs.Median, "0")} µs, massimo {Num(timer.LatenessUs.Max, "0")} µs). " +
                 "Le cause tipiche sono DPC lunghi, stati di risparmio energetico profondi della CPU o carico in background.",
                 "Verifica il piano energetico e i DPC; poi ripeti la misura."));
         }

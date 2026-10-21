@@ -214,6 +214,11 @@ public sealed class BenchmarkRunner
         {
             return read();
         }
+        catch (System.Diagnostics.Eventing.Reader.EventLogNotFoundException)
+        {
+            notes.Add($"Non disponibile ({what}): il registro non esiste in questa edizione di Windows.");
+            return null;
+        }
         catch (Exception ex) when (ex is System.Diagnostics.Eventing.Reader.EventLogException or UnauthorizedAccessException)
         {
             _logger.LogInformation(ex, "Lettura non riuscita: {What}", what);

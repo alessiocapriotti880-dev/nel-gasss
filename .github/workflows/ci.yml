@@ -35,6 +35,14 @@ jobs:
       # Il runner gira come amministratore: verifica anche bcdedit, TPM e attività pianificate di sistema.
       - name: Smoke test analisi del sistema
         run: dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- analyze --json analysis-report.json
+      # Misure reali brevi: sessione ETW del kernel (DPC/ISR), timer, sensori, ping e confronto fra due sessioni.
+      # In Azure il ping verso Internet è bloccato: deve risultare come "nessuna risposta", non come errore.
+      - name: Smoke test benchmark
+        run: |
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark --duration 15 --pings 20 --label "ci prima" --json bench-before.json
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark --duration 15 --pings 20 --label "ci dopo" --no-boot --json bench-after.json
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark list
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- compare --before bench-before.json --after bench-after.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -42,3 +50,5 @@ jobs:
           path: |
             scan-report.json
             analysis-report.json
+            bench-before.json
+            bench-after.json

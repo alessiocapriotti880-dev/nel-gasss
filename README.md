@@ -5,8 +5,9 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 
 > Stato: sviluppo per moduli.
 > Completati: **1 – Core** (interventi transazionali, giornale, rollback, backup, log),
-> **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni) e
-> **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default).
+> **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni),
+> **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default) e
+> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico).
 > Istruzioni complete di compilazione e test arriveranno con il modulo 9.
 
 ## Struttura
@@ -16,6 +17,7 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Core` | `ITweak`, `TweakEngine` (applicazione transazionale e rollback), `ChangeJournal`, backup `.reg`, log, punto di ripristino, provider Windows (registro, servizi, piano energetico), `Finding` |
 | `src/PcOptimizer.Hardware` | Rilevamento hardware (`Windows/`), parser puri (`Parsing/`), tabelle aggiornabili (`Data/*.json`), valutazione: fascia, stima XMP, canali RAM, osservazioni (`Assessment/`) |
 | `src/PcOptimizer.Analysis` | Analisi della configurazione (`Windows/`): servizi, avvio, attività, driver, processi, alimentazione, timer, interrupt/MSI, HAGS, impostazioni di gioco, sicurezza; valutazione pura (`Evaluation/`) e catalogo del software noto (`Data/known-software.json`) |
+| `src/PcOptimizer.Benchmark` | Misure (`Windows/`): sessione ETW del kernel per DPC/ISR, timer ad alta risoluzione, PresentMon, ping, avvio, uso CPU, sensori (NVML, D3DKMT, HWiNFO); calcolo puro (`Statistics/`, `Latency/`, `Frames/`, `Comparison/`): percentili, Mann-Whitney, punteggio, confronto prima/dopo |
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 
@@ -64,12 +66,40 @@ impostazioni diverse dai valori predefiniti di Windows, con l'effetto noto di ci
 (nessun effetto, da misurare, sfavorevole). Per i processi legge solo nome e memoria
 dall'elenco di sistema: non apre handle e non interagisce con giochi o anti-cheat.
 
+## Misurare (benchmark)
+
+Da un terminale **come amministratore** (la misura DPC/ISR usa una sessione ETW del kernel, come LatencyMon):
+
+```
+dotnet run --project src/PcOptimizer.Cli -- benchmark --label "prima"
+dotnet run --project src/PcOptimizer.Cli -- benchmark list
+dotnet run --project src/PcOptimizer.Cli -- compare --before <id> --after <id>
+```
+
+- **Latenza** (60 s, non usare il PC): durata di DPC e ISR per secondo e per driver, ritardo di risveglio di un
+  timer ad alta risoluzione da 1 ms, uso CPU e processi più attivi (dall'elenco di sistema, senza aprire processi),
+  sensori. `--load` ripete la misura con un carico CPU sintetico.
+- **Rete**: 200 ping a 10 Hz verso il router e verso `1.1.1.1` (`--ping <host>` o `--ping none`): mediana, P95, jitter, perdita.
+- **Avvio**: tempi degli ultimi avvii registrati da Windows (evento 100 di Diagnostics-Performance).
+- **Gioco**: `benchmark frames --process cs2.exe --seconds 60` con il gioco già avviato. Serve
+  [PresentMon](https://github.com/GameTechDev/PresentMon/releases) (strumento open source di Intel che legge gli eventi
+  ETW di DirectX: non si inietta nel gioco ed è compatibile con gli anti-cheat) nella cartella `tools` accanto
+  all'app o in `%ProgramData%\PcOptimizerPro\tools`. In alternativa `--csv` importa un file di PresentMon, FrameView o CapFrameX.
+- **Sensori**: GPU da NVML (NVIDIA) e dal kernel grafico di Windows (tutte le marche); CPU (temperatura, potenza, Vcore,
+  throttling) da [HWiNFO](https://www.hwinfo.com) se aperto con "Shared Memory Support". L'app non installa driver propri.
+
+Il **punteggio di latenza** (0-100) è indicativo e serve a confrontare misure dello stesso PC.
+Il **confronto** dichiara "migliorato" o "peggiorato" solo se la differenza è statisticamente significativa
+(Mann-Whitney sui valori per secondo, p < 0,05), supera la soglia minima della grandezza e supera la variabilità
+osservata fra misure "prima" ripetute: nessun FPS promesso, solo differenze misurate.
+
 ## Tabelle dati
 
 `src/PcOptimizer.Hardware/Data/` contiene architetture CPU, indici GPU, codici prodotto RAM, chipset
 e parametri della classificazione. Sono incorporate nell'eseguibile; una versione aggiornata in
 `<cartella dell'eseguibile>\data\` (o indicata con `--data`) ha la precedenza, senza ricompilare.
 Gli indici di prestazione sono **approssimati** e servono solo a collocare il PC in una fascia.
+`src/PcOptimizer.Benchmark/Data/known-drivers.json` dà nome e consiglio per i driver con DPC/ISR lunghi.
 
 ## Dove salva i dati
 
@@ -77,3 +107,4 @@ Gli indici di prestazione sono **approssimati** e servono solo a collocare il PC
 - `journal\changes.jsonl`: giornale delle modifiche (fonte per il rollback)
 - `backups\<data>_<intervento>_<id>\original.reg`: valori originali, ripristinabili anche senza l'app
 - `logs\pcoptimizer-<data>.log`: log giornaliero (30 giorni)
+- `benchmarks\<data>_<etichetta>_<id>.json`: sessioni di misura

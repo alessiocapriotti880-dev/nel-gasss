@@ -84,11 +84,12 @@ public sealed class EtwDpcIsrCollector
         }
         finally
         {
+            // Il conteggio degli eventi persi si legge con la sessione ancora attiva: dopo Stop la query fallisce.
+            aggregator.AddLost(LostEvents(session));
             session.Stop(noThrow: true);
             await processing.ConfigureAwait(false);
         }
 
-        aggregator.AddLost(session.EventsLost);
         if (aggregator.Modules.Count == 0)
         {
             _logger.LogInformation("ETW non ha fornito l'elenco dei moduli: uso psapi");
@@ -99,6 +100,19 @@ public sealed class EtwDpcIsrCollector
         _logger.LogInformation("DPC/ISR ({Session}): {Dpc} DPC, {Isr} ISR, massimo DPC {MaxDpc:0} µs, ISR {MaxIsr:0} µs, moduli noti {Modules}, eventi persi {Lost}",
             sessionName, result.DpcCount, result.IsrCount, result.MaxDpcUs, result.MaxIsrUs, aggregator.Modules.Count, result.LostEvents);
         return result;
+    }
+
+    private int LostEvents(TraceEventSession session)
+    {
+        try
+        {
+            return session.EventsLost;
+        }
+        catch (System.Runtime.InteropServices.COMException ex)
+        {
+            _logger.LogInformation(ex, "Conteggio degli eventi persi non disponibile");
+            return 0;
+        }
     }
 
     /// <summary>Solo i moduli del kernel (driver), cioè quelli nello spazio di sistema (processo 0).</summary>

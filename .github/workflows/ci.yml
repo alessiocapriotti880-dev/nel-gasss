@@ -27,6 +27,21 @@ jobs:
           name: test-results
           path: TestResults
 
+      # Eseguibili pronti da scaricare (scheda "Artifacts" della run).
+      - name: Pubblicazione eseguibili
+        run: |
+          dotnet publish src/PcOptimizer.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+          dotnet publish src/PcOptimizer.Cli -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+          Copy-Item README.md publish/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PcOptimizerPro-win-x64
+          path: |
+            publish/*.exe
+            publish/*.dll
+            publish/README.md
+          if-no-files-found: error
+
       # Smoke test: esegue il rilevamento reale (WMI, registro, CPUID, API native) su Windows.
       # Il runner è una VM senza GPU né monitor: alcune parti risultano vuote, ma ogni errore
       # di query o di interop compare nel report come "Alcune informazioni non sono state rilevate".

@@ -163,9 +163,10 @@ internal static class NetworkDetector
                 "SELECT Name, InterfaceDescription, InterfaceGuid, NdisPhysicalMedium, Speed, MediaConnectState, " +
                 "DriverVersionString, DriverDate, PnPDeviceID FROM MSFT_NetAdapter WHERE HardwareInterface = TRUE");
         }
-        catch (System.Management.ManagementException)
+        catch (Exception ex) when (ex is System.Management.ManagementException or
+                                       System.Runtime.InteropServices.COMException or UnauthorizedAccessException)
         {
-            rows = [];
+            rows = []; // si ripiega sulle informazioni di .NET (senza versione del driver)
         }
 
         if (rows.Count == 0)
@@ -241,7 +242,7 @@ internal static class OsDetector
             var drive = new DriveInfo(Environment.GetEnvironmentVariable("SystemDrive") ?? "C:");
             (total, free) = (drive.TotalSize, drive.AvailableFreeSpace);
         }
-        catch (IOException)
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             // Lasciamo 0: le osservazioni sullo spazio libero vengono saltate.
         }

@@ -67,6 +67,19 @@ internal static class GpuDetector
             return (null, null);
         }
 
+        // Dati facoltativi: se una chiave non è leggibile si perde solo la VRAM, non la GPU.
+        try
+        {
+            return ReadDriverClassKeyUnsafe(pnpDeviceId);
+        }
+        catch (Exception ex) when (ex is System.Security.SecurityException or UnauthorizedAccessException or IOException)
+        {
+            return (null, null);
+        }
+    }
+
+    private static (long? Memory, string? RadeonVersion) ReadDriverClassKeyUnsafe(string pnpDeviceId)
+    {
         using var hklm = RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, RegistryView.Registry64);
         using var device = hklm.OpenSubKey(@"SYSTEM\CurrentControlSet\Enum\" + pnpDeviceId);
         if (device?.GetValue("Driver") is not string driverKey)

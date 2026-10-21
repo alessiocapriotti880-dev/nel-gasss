@@ -456,7 +456,7 @@ static SessionRunner CreateSessionRunner(AppPaths paths, ILoggerFactory loggers,
     var process = Environment.ProcessPath ?? "pcopt.exe";
     var isHost = Path.GetFileNameWithoutExtension(process).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
     var resume = new ScheduledTaskResumeScheduler(process,
-        isHost ? $"\"{typeof(Inspection).Assembly.Location}\" session resume" : "session resume",
+        isHost ? $"\"{Path.Combine(AppContext.BaseDirectory, typeof(Inspection).Assembly.GetName().Name + ".dll")}\" session resume" : "session resume",
         loggers.CreateLogger<ScheduledTaskResumeScheduler>());
 
     return new SessionRunner(new EngineApplier(engine, journal), new WindowsRestorePointService(loggers.CreateLogger<WindowsRestorePointService>()),

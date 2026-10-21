@@ -1,0 +1,37 @@
+{
+  "_comment": [
+    "Codici prodotto dei moduli RAM: velocità certificata (MT/s) ed eventuale CAS latency.",
+    "Servono a stimare se il profilo XMP/EXPO è attivo: la velocità reale si confronta con quella del kit.",
+    "Gruppi della regex: 'speed' (con speedScale) oppure 'code' (tabella codes); 'cl' opzionale.",
+    "jedec: true = moduli di serie (tipici dei PC di marca) senza profilo XMP/EXPO da attivare."
+  ],
+  "standardSpeeds": [800, 1066, 1333, 1600, 1866, 2133, 2400, 2666, 2933, 3200, 3600, 4000, 4400, 4800, 5200, 5600, 6000, 6400, 6800, 7200, 8000],
+  "patterns": [
+    { "brand": "Corsair", "regex": "^CM[A-Z]{1,4}\\d+GX[345]M\\d[A-Z](?<speed>\\d{4})C(?<cl>\\d{1,2})" },
+    { "brand": "G.Skill", "regex": "^F[345]-(?<speed>\\d{4})[CJ]L?(?<cl>\\d{1,2})" },
+    { "brand": "Kingston FURY / HyperX", "regex": "^(?:KF|HX)[345](?<speed>\\d{2})C(?<cl>\\d{2})", "speedScale": 100, "snapToStandard": true },
+    { "brand": "Kingston HyperX", "regex": "^KHX(?<speed>\\d{4})C(?<cl>\\d{1,2})" },
+    { "brand": "Kingston ValueRAM", "regex": "^KVR(?<speed>\\d{2})", "speedScale": 100, "snapToStandard": true, "jedec": true },
+    { "brand": "Crucial Ballistix", "regex": "^BLS?(?:\\d+K)?\\d+G(?<speed>\\d{2})C(?<cl>\\d{2})", "speedScale": 100, "snapToStandard": true },
+    { "brand": "Crucial Pro", "regex": "^CP\\d+G(?<speed>\\d{2})C(?<cl>\\d{2})", "speedScale": 100, "snapToStandard": true },
+    { "brand": "Crucial", "regex": "^CT\\d+G(?<speed>\\d{2})C(?<cl>\\d{2})", "speedScale": 100, "snapToStandard": true, "jedec": true },
+    { "brand": "Crucial", "regex": "^CT\\d+G4[A-Z]+\\d?(?<speed>\\d{3})", "speedScale": 10, "snapToStandard": true, "jedec": true },
+    { "brand": "Crucial", "regex": "^CT\\d+G4[A-Z]+(?<speed>\\d{2})[A-Z]", "speedScale": 100, "snapToStandard": true, "jedec": true },
+    { "brand": "TeamGroup", "regex": "(?<speed>\\d{4})HC(?<cl>\\d{2})" },
+    { "brand": "ADATA XPG", "regex": "^AX[45]U(?<speed>\\d{4})" },
+    { "brand": "ADATA", "regex": "^AD[45]U(?<speed>\\d{4})", "jedec": true },
+    { "brand": "Patriot", "regex": "^P[A-Z]{2}[345]\\d+G(?<speed>\\d{3})C(?:(?<cl>\\d{2})|\\d)K?", "speedScale": 10, "snapToStandard": true },
+    {
+      "brand": "Samsung", "regex": "^M[34]\\d{2}[A-Z0-9]+-C(?<code>[A-Z]{2})", "jedec": true,
+      "codes": { "PB": 2133, "RC": 2400, "TD": 2666, "VF": 2933, "WE": 3200, "QK": 4800, "WM": 5600, "XN": 6400 }
+    },
+    {
+      "brand": "SK hynix", "regex": "^HMA[A-Z0-9]+-(?<code>[A-Z]{2})", "jedec": true,
+      "codes": { "TF": 2133, "UH": 2400, "VK": 2666, "WM": 2933, "XN": 3200 }
+    },
+    {
+      "brand": "Micron", "regex": "^(?:MTA)?\\d+ATF[A-Z0-9]+-(?<code>\\dG\\d)", "jedec": true,
+      "codes": { "2G1": 2133, "2G3": 2400, "2G6": 2666, "2G9": 2933, "3G2": 3200 }
+    }
+  ]
+}

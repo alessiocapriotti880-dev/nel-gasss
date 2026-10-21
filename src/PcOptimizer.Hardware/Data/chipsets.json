@@ -1,0 +1,38 @@
+{
+  "_comment": [
+    "Supporto all'overclock per chipset. Determina se ha senso suggerire XMP/EXPO o l'overclock della CPU.",
+    "Valori possibili: Yes, No, Limited (non ufficiale o dipendente dalla scheda), Unknown."
+  ],
+  "chipsets": [
+    {
+      "cpuVendor": "Intel", "cpuOverclock": "Yes", "memoryOverclock": "Yes",
+      "names": ["Z68", "Z77", "Z87", "Z97", "Z170", "Z270", "Z370", "Z390", "Z490", "Z590", "Z690", "Z790", "Z890", "X79", "X99", "X299"],
+      "note": "Overclock completo con CPU sbloccate (serie K/KF/KS/X)."
+    },
+    {
+      "cpuVendor": "Intel", "cpuOverclock": "No", "memoryOverclock": "Yes",
+      "names": ["B560", "H570", "B660", "H670", "B760", "H770", "B860"],
+      "note": "Profili XMP supportati; moltiplicatore CPU bloccato."
+    },
+    {
+      "cpuVendor": "Intel", "cpuOverclock": "No", "memoryOverclock": "No",
+      "names": ["H61", "B75", "H77", "Q77", "H81", "B85", "H87", "Q87", "H97", "H110", "B150", "H170", "Q170", "B250", "H270", "Q270", "H310", "B360", "B365", "H370", "Q370", "H410", "B460", "H470", "Q470", "H510", "H610"],
+      "note": "La RAM resta alla velocità massima ufficiale della CPU anche se il kit supporta di più: XMP non attivabile."
+    },
+    {
+      "cpuVendor": "Amd", "cpuOverclock": "Yes", "memoryOverclock": "Yes",
+      "names": ["X370", "X470", "X570", "X670", "X870", "B350", "B450", "B550", "B650", "B850", "X399", "TRX40", "TRX50"],
+      "note": "Overclock di CPU (Ryzen) e memoria (DOCP/EXPO) supportati."
+    },
+    {
+      "cpuVendor": "Amd", "cpuOverclock": "No", "memoryOverclock": "Yes",
+      "names": ["A520", "A620", "B840"],
+      "note": "Profili di memoria supportati; overclock della CPU non supportato."
+    },
+    {
+      "cpuVendor": "Amd", "cpuOverclock": "No", "memoryOverclock": "Limited",
+      "names": ["A320"],
+      "note": "Ufficialmente senza overclock; alcune schede permettono comunque i profili di memoria."
+    }
+  ]
+}

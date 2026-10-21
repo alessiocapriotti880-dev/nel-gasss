@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Strumento a riga di comando per provare i moduli su un PC reale prima dell'interfaccia grafica.
+    Uso: pcopt scan [opzioni]  (vedi pcopt help)
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <RootNamespace>PcOptimizer.Cli</RootNamespace>
+    <AssemblyName>pcopt</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Hardware\PcOptimizer.Hardware.csproj" />
+  </ItemGroup>
+
+</Project>

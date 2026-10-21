@@ -1,0 +1,96 @@
+{
+  "_comment": [
+    "Architetture CPU riconosciute tramite CPUID (famiglia/modello/stepping in forma display).",
+    "ipc: prestazioni per core a parità di clock, Skylake = 1.00. Valori APPROSSIMATI ricavati da benchmark single-thread pubblici: servono a classificare la fascia, non a prevedere FPS.",
+    "Il clock reale viene da CPUID 0x16 (Intel 6a gen e successive); altrimenti si usa typicalBoostMHz (tipico della famiglia).",
+    "models: modelli CPUID in esadecimale, singoli o intervalli 'da-a'. Se più voci corrispondono vince la più specifica: stepping > modello esatto > intervallo.",
+    "advisories: problemi noti verificati su microcode o data del BIOS."
+  ],
+  "referenceClockMHz": 3600,
+  "brandModifiers": [
+    { "contains": "X3D", "gamingFactor": 1.15, "note": "3D V-Cache: vantaggio marcato nei giochi limitati dalla CPU" }
+  ],
+  "architectures": [
+    { "id": "intel-core2", "name": "Core 2", "vendor": "Intel", "family": "0x6", "models": ["0x0F", "0x16", "0x17", "0x1D"], "generation": "Core 2 (2006-2008)", "year": 2006, "ipc": 0.55, "typicalBoostMHz": 2800, "segment": "Desktop" },
+    { "id": "intel-nehalem", "name": "Nehalem / Westmere", "vendor": "Intel", "family": "0x6", "models": ["0x1A", "0x1E", "0x1F", "0x25", "0x2C", "0x2E", "0x2F"], "generation": "Core 1a gen", "year": 2008, "ipc": 0.70, "typicalBoostMHz": 3300, "segment": "Desktop" },
+    { "id": "intel-sandybridge", "name": "Sandy Bridge", "vendor": "Intel", "family": "0x6", "models": ["0x2A", "0x2D"], "generation": "Core 2a gen", "year": 2011, "ipc": 0.82, "typicalBoostMHz": 3600, "segment": "Desktop" },
+    { "id": "intel-ivybridge", "name": "Ivy Bridge", "vendor": "Intel", "family": "0x6", "models": ["0x3A", "0x3E"], "generation": "Core 3a gen", "year": 2012, "ipc": 0.86, "typicalBoostMHz": 3700, "segment": "Desktop" },
+    { "id": "intel-haswell", "name": "Haswell", "vendor": "Intel", "family": "0x6", "models": ["0x3C", "0x3F", "0x45", "0x46"], "generation": "Core 4a gen", "year": 2013, "ipc": 0.94, "typicalBoostMHz": 3800, "segment": "Desktop" },
+    { "id": "intel-broadwell", "name": "Broadwell", "vendor": "Intel", "family": "0x6", "models": ["0x3D", "0x47", "0x4F", "0x56"], "generation": "Core 5a gen", "year": 2015, "ipc": 0.97, "typicalBoostMHz": 3600, "segment": "Desktop" },
+    { "id": "intel-skylake", "name": "Skylake", "vendor": "Intel", "family": "0x6", "models": ["0x4E", "0x5E"], "generation": "Core 6a gen", "year": 2015, "ipc": 1.00, "typicalBoostMHz": 3600, "segment": "Desktop" },
+    { "id": "intel-skylake-x", "name": "Skylake-X / Cascade Lake", "vendor": "Intel", "family": "0x6", "models": ["0x55"], "generation": "Core serie X / Xeon W", "year": 2017, "ipc": 0.98, "typicalBoostMHz": 4300, "segment": "Workstation" },
+    { "id": "intel-kabylake-s", "name": "Kaby Lake", "vendor": "Intel", "family": "0x6", "models": ["0x9E"], "steppings": [9], "generation": "Core 7a gen", "year": 2017, "ipc": 1.00, "typicalBoostMHz": 3900, "segment": "Desktop" },
+    { "id": "intel-coffeelake-s", "name": "Coffee Lake", "vendor": "Intel", "family": "0x6", "models": ["0x9E"], "steppings": [10, 11, 12, 13], "generation": "Core 8a/9a gen", "year": 2017, "ipc": 1.00, "typicalBoostMHz": 4400, "segment": "Desktop" },
+    { "id": "intel-kabylake-coffeelake", "name": "Kaby Lake / Coffee Lake", "vendor": "Intel", "family": "0x6", "models": ["0x9E"], "generation": "Core 7a-9a gen", "year": 2017, "ipc": 1.00, "typicalBoostMHz": 4200, "segment": "Desktop" },
+    { "id": "intel-kabylake-mobile", "name": "Kaby / Whiskey / Amber / Comet Lake (U/Y)", "vendor": "Intel", "family": "0x6", "models": ["0x8E"], "generation": "Core 7a-10a gen mobile", "year": 2016, "ipc": 1.00, "typicalBoostMHz": 3900, "segment": "Mobile" },
+    { "id": "intel-cometlake-s", "name": "Comet Lake", "vendor": "Intel", "family": "0x6", "models": ["0xA5"], "generation": "Core 10a gen", "year": 2020, "ipc": 1.00, "typicalBoostMHz": 4600, "segment": "Desktop" },
+    { "id": "intel-cometlake-u", "name": "Comet Lake-U", "vendor": "Intel", "family": "0x6", "models": ["0xA6"], "generation": "Core 10a gen mobile", "year": 2019, "ipc": 1.00, "typicalBoostMHz": 4300, "segment": "Mobile" },
+    { "id": "intel-icelake-mobile", "name": "Ice Lake", "vendor": "Intel", "family": "0x6", "models": ["0x7D", "0x7E"], "generation": "Core 10a gen mobile", "year": 2019, "ipc": 1.18, "typicalBoostMHz": 3900, "segment": "Mobile" },
+    { "id": "intel-tigerlake", "name": "Tiger Lake", "vendor": "Intel", "family": "0x6", "models": ["0x8C", "0x8D"], "generation": "Core 11a gen mobile", "year": 2020, "ipc": 1.20, "typicalBoostMHz": 4500, "segment": "Mobile" },
+    { "id": "intel-rocketlake", "name": "Rocket Lake", "vendor": "Intel", "family": "0x6", "models": ["0xA7"], "generation": "Core 11a gen", "year": 2021, "ipc": 1.19, "typicalBoostMHz": 4800, "segment": "Desktop" },
+    { "id": "intel-alderlake-s", "name": "Alder Lake", "vendor": "Intel", "family": "0x6", "models": ["0x97"], "generation": "Core 12a gen", "year": 2021, "ipc": 1.40, "eCoreIpc": 1.00, "typicalBoostMHz": 4800, "typicalECoreBoostMHz": 3800, "segment": "Desktop" },
+    { "id": "intel-alderlake-p", "name": "Alder Lake-P", "vendor": "Intel", "family": "0x6", "models": ["0x9A"], "generation": "Core 12a gen mobile", "year": 2022, "ipc": 1.40, "eCoreIpc": 1.00, "typicalBoostMHz": 4600, "typicalECoreBoostMHz": 3500, "segment": "Mobile" },
+    { "id": "intel-alderlake-n", "name": "Alder Lake-N", "vendor": "Intel", "family": "0x6", "models": ["0xBE"], "generation": "Intel N / Core i3 serie N", "year": 2023, "ipc": 1.00, "typicalBoostMHz": 3400, "segment": "LowPower" },
+    {
+      "id": "intel-raptorlake-s", "name": "Raptor Lake", "vendor": "Intel", "family": "0x6", "models": ["0xB7"], "generation": "Core 13a/14a gen", "year": 2022,
+      "ipc": 1.43, "eCoreIpc": 1.00, "typicalBoostMHz": 5400, "typicalECoreBoostMHz": 4300, "segment": "Desktop",
+      "advisories": [
+        {
+          "id": "intel-raptorlake-vmin-shift",
+          "severity": "Critical",
+          "minimumMicrocode": "0x12B",
+          "title": "Microcode della CPU da aggiornare (instabilità Intel 13a/14a gen)",
+          "detail": "Le CPU Intel Core 13a e 14a gen desktop possono degradarsi in modo permanente a causa di tensioni troppo alte (problema \"Vmin shift\"). Intel ha distribuito le correzioni tramite microcode (0x125, 0x129, 0x12B) incluso negli aggiornamenti del BIOS.",
+          "recommendation": "Aggiorna il BIOS della scheda madre all'ultima versione disponibile (deve includere almeno il microcode 0x12B; controlla sul sito del produttore se ci sono revisioni più recenti) e usa il profilo \"Intel Default Settings\". Fino all'aggiornamento evita overclock e undervolt."
+        }
+      ]
+    },
+    { "id": "intel-raptorlake-s-adl", "name": "Raptor Lake (die Alder Lake)", "vendor": "Intel", "family": "0x6", "models": ["0xBF"], "generation": "Core 13a/14a gen", "year": 2023, "ipc": 1.40, "eCoreIpc": 1.00, "typicalBoostMHz": 4600, "typicalECoreBoostMHz": 3500, "segment": "Desktop" },
+    { "id": "intel-raptorlake-p", "name": "Raptor Lake-P", "vendor": "Intel", "family": "0x6", "models": ["0xBA"], "generation": "Core 13a gen mobile", "year": 2023, "ipc": 1.43, "eCoreIpc": 1.00, "typicalBoostMHz": 4900, "typicalECoreBoostMHz": 3700, "segment": "Mobile" },
+    { "id": "intel-meteorlake", "name": "Meteor Lake", "vendor": "Intel", "family": "0x6", "models": ["0xAA", "0xAC"], "generation": "Core Ultra serie 1", "year": 2023, "ipc": 1.42, "eCoreIpc": 1.05, "typicalBoostMHz": 4800, "typicalECoreBoostMHz": 3800, "segment": "Mobile" },
+    { "id": "intel-arrowlake-s", "name": "Arrow Lake", "vendor": "Intel", "family": "0x6", "models": ["0xC6"], "generation": "Core Ultra serie 2 (desktop)", "year": 2024, "ipc": 1.52, "eCoreIpc": 1.38, "typicalBoostMHz": 5500, "typicalECoreBoostMHz": 4600, "segment": "Desktop" },
+    { "id": "intel-arrowlake-mobile", "name": "Arrow Lake H/U", "vendor": "Intel", "family": "0x6", "models": ["0xB5", "0xC5"], "generation": "Core Ultra serie 2 mobile", "year": 2025, "ipc": 1.50, "eCoreIpc": 1.35, "typicalBoostMHz": 5200, "typicalECoreBoostMHz": 4300, "segment": "Mobile" },
+    { "id": "intel-lunarlake", "name": "Lunar Lake", "vendor": "Intel", "family": "0x6", "models": ["0xBD"], "generation": "Core Ultra 200V", "year": 2024, "ipc": 1.52, "eCoreIpc": 1.30, "typicalBoostMHz": 5000, "typicalECoreBoostMHz": 3700, "segment": "Mobile" },
+    { "id": "intel-pantherlake", "name": "Panther Lake", "vendor": "Intel", "family": "0x6", "models": ["0xCC"], "generation": "Core Ultra serie 3", "year": 2026, "ipc": 1.55, "eCoreIpc": 1.38, "typicalBoostMHz": 5100, "typicalECoreBoostMHz": 4300, "segment": "Mobile" },
+    { "id": "intel-sapphirerapids", "name": "Sapphire Rapids", "vendor": "Intel", "family": "0x6", "models": ["0x8F"], "generation": "Xeon W 2400/3400", "year": 2023, "ipc": 1.38, "typicalBoostMHz": 4600, "segment": "Workstation" },
+    { "id": "intel-silvermont", "name": "Bay Trail / Cherry Trail", "vendor": "Intel", "family": "0x6", "models": ["0x37", "0x4C"], "generation": "Atom / Celeron / Pentium", "year": 2013, "ipc": 0.45, "typicalBoostMHz": 2200, "segment": "LowPower" },
+    { "id": "intel-goldmont", "name": "Apollo Lake / Gemini Lake", "vendor": "Intel", "family": "0x6", "models": ["0x5C", "0x7A"], "generation": "Celeron / Pentium Silver", "year": 2016, "ipc": 0.62, "typicalBoostMHz": 2600, "segment": "LowPower" },
+    { "id": "intel-tremont", "name": "Jasper Lake / Elkhart Lake", "vendor": "Intel", "family": "0x6", "models": ["0x96", "0x9C"], "generation": "Celeron / Pentium Silver", "year": 2021, "ipc": 0.80, "typicalBoostMHz": 2900, "segment": "LowPower" },
+
+    { "id": "amd-k10", "name": "K10", "vendor": "Amd", "family": "0x10", "models": ["0x00-0xFF"], "generation": "Phenom II / Athlon II", "year": 2009, "ipc": 0.55, "typicalBoostMHz": 3400, "segment": "Desktop" },
+    { "id": "amd-llano", "name": "Llano", "vendor": "Amd", "family": "0x12", "models": ["0x00-0xFF"], "generation": "APU serie A (2011)", "year": 2011, "ipc": 0.52, "typicalBoostMHz": 3000, "segment": "Desktop" },
+    { "id": "amd-bobcat", "name": "Bobcat", "vendor": "Amd", "family": "0x14", "models": ["0x00-0xFF"], "generation": "Serie E / C", "year": 2011, "ipc": 0.40, "typicalBoostMHz": 1600, "segment": "LowPower" },
+    { "id": "amd-bulldozer", "name": "Bulldozer", "vendor": "Amd", "family": "0x15", "models": ["0x00-0x0F"], "generation": "FX serie 4000/6000/8000", "year": 2011, "ipc": 0.55, "typicalBoostMHz": 4000, "segment": "Desktop" },
+    { "id": "amd-piledriver", "name": "Piledriver", "vendor": "Amd", "family": "0x15", "models": ["0x10-0x1F"], "generation": "FX / APU serie A", "year": 2012, "ipc": 0.60, "typicalBoostMHz": 4200, "segment": "Desktop" },
+    { "id": "amd-steamroller", "name": "Steamroller", "vendor": "Amd", "family": "0x15", "models": ["0x30-0x3F"], "generation": "APU serie A (Kaveri)", "year": 2014, "ipc": 0.63, "typicalBoostMHz": 3900, "segment": "Desktop" },
+    { "id": "amd-excavator", "name": "Excavator", "vendor": "Amd", "family": "0x15", "models": ["0x60-0x7F"], "generation": "APU serie A / Athlon X4", "year": 2016, "ipc": 0.66, "typicalBoostMHz": 3700, "segment": "Desktop" },
+    { "id": "amd-jaguar", "name": "Jaguar / Puma", "vendor": "Amd", "family": "0x16", "models": ["0x00-0xFF"], "generation": "APU serie A/E a basso consumo", "year": 2013, "ipc": 0.45, "typicalBoostMHz": 2200, "segment": "LowPower" },
+    { "id": "amd-zen", "name": "Zen", "vendor": "Amd", "family": "0x17", "models": ["0x00-0x0F"], "generation": "Ryzen 1000", "year": 2017, "ipc": 0.90, "typicalBoostMHz": 3900, "segment": "Desktop" },
+    { "id": "amd-zenplus", "name": "Zen+", "vendor": "Amd", "family": "0x17", "models": ["0x08"], "generation": "Ryzen 2000", "year": 2018, "ipc": 0.93, "typicalBoostMHz": 4200, "segment": "Desktop" },
+    { "id": "amd-ravenridge", "name": "Raven Ridge (Zen)", "vendor": "Amd", "family": "0x17", "models": ["0x11"], "generation": "Ryzen 2000G / 2000U", "year": 2018, "ipc": 0.90, "typicalBoostMHz": 3800, "segment": "Desktop" },
+    { "id": "amd-picasso", "name": "Picasso (Zen+)", "vendor": "Amd", "family": "0x17", "models": ["0x18"], "generation": "Ryzen 3000G / 3000U", "year": 2019, "ipc": 0.93, "typicalBoostMHz": 3900, "segment": "Desktop" },
+    { "id": "amd-dali", "name": "Dali (Zen)", "vendor": "Amd", "family": "0x17", "models": ["0x20"], "generation": "Athlon 3000", "year": 2020, "ipc": 0.90, "typicalBoostMHz": 3300, "segment": "LowPower" },
+    { "id": "amd-zen2", "name": "Zen 2", "vendor": "Amd", "family": "0x17", "models": ["0x30-0x3F", "0x60-0x7F", "0xA0-0xAF"], "generation": "Ryzen 3000 / 4000", "year": 2019, "ipc": 1.07, "typicalBoostMHz": 4300, "segment": "Desktop" },
+    { "id": "amd-vangogh", "name": "Van Gogh (Zen 2)", "vendor": "Amd", "family": "0x17", "models": ["0x90-0x9F"], "generation": "Steam Deck / APU custom", "year": 2022, "ipc": 1.07, "typicalBoostMHz": 3500, "segment": "LowPower" },
+    { "id": "amd-zen3", "name": "Zen 3", "vendor": "Amd", "family": "0x19", "models": ["0x00-0x0F", "0x20-0x2F", "0x50-0x5F"], "generation": "Ryzen 5000", "year": 2020, "ipc": 1.27, "typicalBoostMHz": 4600, "segment": "Desktop" },
+    { "id": "amd-rembrandt", "name": "Rembrandt (Zen 3+)", "vendor": "Amd", "family": "0x19", "models": ["0x40-0x4F"], "generation": "Ryzen 6000 mobile", "year": 2022, "ipc": 1.29, "typicalBoostMHz": 4600, "segment": "Mobile" },
+    { "id": "amd-zen4-hedt", "name": "Zen 4 (Threadripper/EPYC)", "vendor": "Amd", "family": "0x19", "models": ["0x10-0x1F"], "generation": "Threadripper 7000", "year": 2023, "ipc": 1.38, "typicalBoostMHz": 5100, "segment": "Workstation" },
+    {
+      "id": "amd-zen4", "name": "Zen 4", "vendor": "Amd", "family": "0x19", "models": ["0x60-0x6F"], "generation": "Ryzen 7000", "year": 2022,
+      "ipc": 1.38, "typicalBoostMHz": 5300, "segment": "Desktop",
+      "advisories": [
+        {
+          "id": "amd-am5-early-bios-soc-voltage",
+          "severity": "Warning",
+          "biosReleasedBefore": "2023-05-01",
+          "title": "BIOS AM5 dei primi mesi: tensione SoC troppo alta con EXPO",
+          "detail": "I primi BIOS per Ryzen 7000 (AM5) potevano applicare una tensione SoC eccessiva quando il profilo EXPO era attivo, con rischio di danneggiare la CPU (casi documentati soprattutto sui modelli X3D). AMD ha limitato la tensione con AGESA 1.0.0.7b (primavera 2023).",
+          "recommendation": "Aggiorna il BIOS all'ultima versione disponibile prima di attivare EXPO o fare qualsiasi overclock della memoria."
+        }
+      ]
+    },
+    { "id": "amd-phoenix", "name": "Phoenix / Hawk Point (Zen 4)", "vendor": "Amd", "family": "0x19", "models": ["0x70-0x7F"], "generation": "Ryzen 7040 / 8040 / 8000G", "year": 2023, "ipc": 1.36, "typicalBoostMHz": 5000, "segment": "Desktop" },
+    { "id": "amd-zen5", "name": "Zen 5", "vendor": "Amd", "family": "0x1A", "models": ["0x40-0x4F"], "generation": "Ryzen 9000", "year": 2024, "ipc": 1.52, "typicalBoostMHz": 5400, "segment": "Desktop" },
+    { "id": "amd-zen5-mobile", "name": "Strix / Krackan (Zen 5)", "vendor": "Amd", "family": "0x1A", "models": ["0x20-0x2F", "0x60-0x7F"], "generation": "Ryzen AI 300 / Ryzen AI Max", "year": 2024, "ipc": 1.50, "typicalBoostMHz": 5000, "segment": "Mobile" }
+  ]
+}

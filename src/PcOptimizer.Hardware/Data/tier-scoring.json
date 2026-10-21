@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "Classificazione in fascia. Punteggio totale = media pesata dei punteggi (0-100) di CPU, GPU, RAM e disco.",
+    "CPU: 60% single-thread (indice per core) + 40% multi-thread (core equivalenti, con fattore SMT).",
+    "GPU: scala logaritmica dell'indice (le prestazioni tra GPU variano di decine di volte).",
+    "RAM: quantità (punti a tratti) e banda stimata (velocità x canali x 8 byte).",
+    "caps: limiti che prevalgono sul punteggio (es. 8 GB di RAM o Windows su HDD non possono essere fascia Alta).",
+    "Soglie tarate sui PC di riferimento: i5-6500 + GT 730 = Bassa (~18), i5-12400F + RTX 3060 = Media (~78), i5-13600K + RTX 4070 = Alta (~95)."
+  ],
+  "weights": { "cpu": 0.35, "gpu": 0.35, "memory": 0.15, "storage": 0.15 },
+  "thresholds": { "mid": 45, "high": 85 },
+  "cpu": {
+    "singleThreadMin": 0.6,
+    "singleThreadMax": 2.0,
+    "multiThreadUnitsMax": 16,
+    "singleThreadWeight": 0.6,
+    "smtFactor": 1.25,
+    "laptopSingleThreadFactor": 0.92,
+    "laptopMultiThreadFactor": 0.75
+  },
+  "gpu": { "indexLow": 15, "indexHigh": 500 },
+  "memory": {
+    "capacityPoints": [[4, 10], [8, 40], [16, 70], [32, 100]],
+    "bandwidthLowGBs": 12.8,
+    "bandwidthHighGBs": 76.8,
+    "capacityWeight": 0.6
+  },
+  "storage": { "nvme": 100, "sataSsd": 70, "usbSsd": 40, "hdd": 10, "usbHdd": 0, "unknown": 50 },
+  "caps": {
+    "lowIfMemoryUnderGB": 8,
+    "midIfMemoryUnderGB": 16,
+    "midIfSystemDiskIsHdd": true,
+    "lowIfGpuScoreUnder": 20
+  }
+}

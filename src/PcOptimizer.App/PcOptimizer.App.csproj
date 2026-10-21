@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Applicazione WPF "PC Optimizer Pro". Interfaccia in italiano; la logica sta in PcOptimizer.Presentation.
+    Il manifest richiede l'amministratore: misure ETW, punti di ripristino e modifiche al sistema lo richiedono.
+  -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <RootNamespace>PcOptimizer.App</RootNamespace>
+    <AssemblyName>PcOptimizerPro</AssemblyName>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Presentation\PcOptimizer.Presentation.csproj" />
+  </ItemGroup>
+
+</Project>

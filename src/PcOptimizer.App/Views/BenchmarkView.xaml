@@ -1,0 +1,109 @@
+<UserControl x:Class="PcOptimizer.App.Views.BenchmarkView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:PcOptimizer.App.Controls">
+    <ScrollViewer>
+        <StackPanel Margin="0,0,12,12">
+            <TextBlock Text="Misure" Style="{StaticResource H1}" />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Latenza del sistema" Style="{StaticResource H2}" />
+                        <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,10"
+                                   Text="DPC e ISR dei driver (ETW del kernel, come LatencyMon), ritardo di risveglio dei thread, uso CPU, sensori e rete. Chiudi i programmi e non usare il PC durante la misura." />
+                        <WrapPanel>
+                            <TextBlock Text="Durata (s)" VerticalAlignment="Center" Margin="0,0,6,8" />
+                            <TextBox Text="{Binding DurationSeconds, UpdateSourceTrigger=PropertyChanged}" Width="60" />
+                            <TextBlock Text="Etichetta" VerticalAlignment="Center" Margin="0,0,6,8" />
+                            <TextBox Text="{Binding Label, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                        </WrapPanel>
+                        <WrapPanel>
+                            <CheckBox Content="Sotto carico CPU sintetico" IsChecked="{Binding CpuLoad}" />
+                            <CheckBox Content="Misura anche la rete (ping e jitter)" IsChecked="{Binding MeasureNetwork}" />
+                        </WrapPanel>
+                        <WrapPanel Margin="0,4,0,0">
+                            <Button Content="Avvia la misura" Style="{StaticResource PrimaryButton}" Command="{Binding RunLatencyCommand}" IsEnabled="{Binding State.IsIdle}" />
+                            <Button Content="Annulla" Command="{Binding CancelCommand}" />
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Frame time in gioco" Style="{StaticResource H2}" />
+                        <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,10"
+                                   Text="Con PresentMon (strumento di Intel che legge gli eventi di DirectX: non tocca il gioco né l'anti-cheat). Avvia il gioco e ripeti sempre la stessa scena." />
+                        <WrapPanel>
+                            <TextBlock Text="Eseguibile" VerticalAlignment="Center" Margin="0,0,6,8" />
+                            <TextBox Text="{Binding GameProcess, UpdateSourceTrigger=PropertyChanged}" Width="160" />
+                            <TextBlock Text="Durata (s)" VerticalAlignment="Center" Margin="0,0,6,8" />
+                            <TextBox Text="{Binding FrameSeconds, UpdateSourceTrigger=PropertyChanged}" Width="60" />
+                        </WrapPanel>
+                        <Button Content="Registra i frame" HorizontalAlignment="Left" Command="{Binding RunFramesCommand}" IsEnabled="{Binding State.IsIdle}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="320" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource Card}">
+                    <DockPanel>
+                        <StackPanel DockPanel.Dock="Top">
+                            <TextBlock Text="Misure salvate" Style="{StaticResource H2}" />
+                            <TextBlock Style="{StaticResource Muted}" Text="Clic per i dettagli; spunta per confrontare." Margin="0,0,0,8" />
+                        </StackPanel>
+                        <WrapPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+                            <Button Content="Confronta" Command="{Binding CompareCommand}" />
+                            <Button Content="Aggiorna" Command="{Binding RefreshCommand}" />
+                        </WrapPanel>
+                        <ListBox ItemsSource="{Binding Runs}" SelectedItem="{Binding Selected}" MaxHeight="420"
+                                 Background="Transparent" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal" Margin="0,4">
+                                        <CheckBox IsChecked="{Binding IsChecked}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Title}" />
+                                            <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" />
+                                        </StackPanel>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </DockPanel>
+                </Border>
+                <StackPanel Grid.Column="1">
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Grafico" Style="{StaticResource H2}" />
+                            <c:LineChart Series="{Binding Chart}" Height="220" />
+                            <c:LineChart Series="{Binding FrameChart}" Height="180" Margin="0,12,0,0" EmptyText="Nessuna registrazione dei frame per questa misura." />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Confronto" Style="{StaticResource H2}" />
+                            <TextBlock Text="{Binding ComparisonNote}" Style="{StaticResource Muted}" Margin="0,0,0,8" />
+                            <ItemsControl ItemsSource="{Binding Comparison}" />
+                            <ItemsControl ItemsSource="{Binding ComparisonRows}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                    <Border Style="{StaticResource Card}">
+                        <StackPanel>
+                            <TextBlock Text="Dettagli della misura" Style="{StaticResource H2}" />
+                            <ItemsControl ItemsSource="{Binding Details}" />
+                            <ItemsControl ItemsSource="{Binding Findings}" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

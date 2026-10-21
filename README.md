@@ -9,8 +9,9 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 > **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default),
 > **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico),
 > **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima),
-> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback) e
-> **7 – Overclock e undervolt guidati** (checklist del BIOS per produttore, limiti di sicurezza fissi, procedure a passi, test di stabilità CPU/RAM/GPU/VRAM).
+> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback),
+> **7 – Overclock e undervolt guidati** (checklist del BIOS per produttore, limiti di sicurezza fissi, procedure a passi, test di stabilità CPU/RAM/GPU/VRAM) e
+> **8 – Interfaccia grafica** (WPF: panoramica, analisi, misure con grafici prima/dopo, ottimizzazione con interruttori e badge di rischio, overclock e undervolt, registro).
 > Istruzioni complete di compilazione e test arriveranno con il modulo 9.
 
 ## Struttura
@@ -24,6 +25,8 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Tweaks` | Catalogo degli interventi (`Catalog/`): alimentazione, servizi, avvio, attività, privacy, effetti visivi, impostazioni di gioco, monitor, MSI, rete, archiviazione, sicurezza, ripristino dei default, giochi; indicazioni guidate (`Guidance/`); manutenzione (`Maintenance/`) |
 | `src/PcOptimizer.Optimization` | Piano (`Planning/`), giudizio prima/dopo (`Judging/`), sessione con stato persistente e ripresa dopo il riavvio (`Session/`), servizi Windows (`Windows/`) |
 | `src/PcOptimizer.Tuning` | Checklist del BIOS (`Bios/`, `Data/bios-menus.json`), limiti di sicurezza (`Safety/`), procedure guidate e registro dei valori provati (`Guides/`), test di stabilità (`Stability/`; GPU con Direct3D 11 in `Windows/`) |
+| `src/PcOptimizer.Presentation` | View model MVVM (CommunityToolkit.Mvvm) e dati dei grafici, provati senza Windows; `Services/WindowsOptimizerServices` collega tutti i moduli |
+| `src/PcOptimizer.App` | Applicazione WPF `PcOptimizerPro.exe` (richiede l'amministratore): viste, tema, grafici |
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 

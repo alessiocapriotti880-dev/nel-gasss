@@ -1,0 +1,66 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:vm="clr-namespace:PcOptimizer.Presentation.ViewModels;assembly=PcOptimizer.Presentation"
+                    xmlns:ch="clr-namespace:PcOptimizer.Presentation.Charts;assembly=PcOptimizer.Presentation">
+
+    <!-- Riga etichetta/valore -->
+    <DataTemplate DataType="{x:Type vm:InfoRow}">
+        <Grid Margin="0,0,0,6">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="170" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Label}" Style="{StaticResource Muted}" Margin="0,0,12,0" />
+            <TextBlock Grid.Column="1" Text="{Binding Value}" />
+        </Grid>
+    </DataTemplate>
+
+    <!-- Osservazione con badge di gravità -->
+    <DataTemplate DataType="{x:Type vm:FindingItem}">
+        <Border Background="{StaticResource SurfaceRaised}" CornerRadius="6" Padding="12,10" Margin="0,0,0,8">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,4">
+                    <Border Style="{StaticResource Badge}" Background="{Binding Level, Converter={StaticResource LevelToBrush}}">
+                        <TextBlock Text="{Binding Severity}" Foreground="#FF0B1220" FontSize="11" FontWeight="SemiBold" />
+                    </Border>
+                    <TextBlock Text="{Binding Area}" Style="{StaticResource Muted}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" VerticalAlignment="Center" />
+                </StackPanel>
+                <TextBlock Text="{Binding Detail}" Style="{StaticResource Muted}" />
+                <TextBlock Text="{Binding Recommendation, StringFormat=→ {0}}" Margin="0,4,0,0"
+                           Visibility="{Binding Recommendation, Converter={StaticResource NullToVisibility}}" />
+            </StackPanel>
+        </Border>
+    </DataTemplate>
+
+    <!-- Barra del confronto prima/dopo -->
+    <DataTemplate DataType="{x:Type ch:ComparisonBar}">
+        <Grid Margin="0,0,0,10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="200" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="90" />
+            </Grid.ColumnDefinitions>
+            <TextBlock Text="{Binding Title}" Style="{StaticResource Muted}" Margin="0,0,8,0" />
+            <StackPanel Grid.Column="1">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,2">
+                    <Rectangle Height="8" RadiusX="2" RadiusY="2" Fill="{StaticResource Chart.Before}"
+                               Width="{Binding BeforeRatio, Converter={StaticResource RatioToWidth}, ConverterParameter=220}" />
+                    <TextBlock Margin="6,-3,0,0" FontSize="11" Style="{StaticResource Muted}">
+                        <Run Text="{Binding Before, StringFormat={}{0:0.##}, Mode=OneWay}" /> <Run Text="{Binding Unit, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal">
+                    <Rectangle Height="8" RadiusX="2" RadiusY="2" Fill="{StaticResource Chart.After}"
+                               Width="{Binding AfterRatio, Converter={StaticResource RatioToWidth}, ConverterParameter=220}" />
+                    <TextBlock Margin="6,-3,0,0" FontSize="11" Style="{StaticResource Muted}">
+                        <Run Text="{Binding After, StringFormat={}{0:0.##}, Mode=OneWay}" /> <Run Text="{Binding Unit, Mode=OneWay}" />
+                    </TextBlock>
+                </StackPanel>
+            </StackPanel>
+            <TextBlock Grid.Column="2" Text="{Binding Change}" FontWeight="SemiBold" HorizontalAlignment="Right"
+                       Foreground="{Binding Verdict, Converter={StaticResource LevelToBrush}}" />
+        </Grid>
+    </DataTemplate>
+
+</ResourceDictionary>

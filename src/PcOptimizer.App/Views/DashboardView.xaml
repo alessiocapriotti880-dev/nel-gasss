@@ -1,0 +1,69 @@
+<UserControl x:Class="PcOptimizer.App.Views.DashboardView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:PcOptimizer.App.Controls">
+    <ScrollViewer>
+        <StackPanel Margin="0,0,12,12">
+            <DockPanel Margin="0,0,0,8">
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                    <Button Content="Analizza il sistema" Command="{Binding AnalyzeCommand}" IsEnabled="{Binding State.IsIdle}" />
+                    <Button Content="Misura la latenza" Command="{Binding GoToBenchmarkCommand}" />
+                    <Button Content="Ottimizza" Style="{StaticResource PrimaryButton}" Command="{Binding GoToOptimizationCommand}" />
+                </StackPanel>
+                <TextBlock Text="Panoramica" Style="{StaticResource H1}" />
+            </DockPanel>
+
+            <UniformGrid Columns="3">
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Fascia hardware" Style="{StaticResource Muted}" />
+                        <TextBlock Text="{Binding TierName}" Style="{StaticResource BigNumber}" />
+                        <TextBlock Text="{Binding TierScore}" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Punteggio di latenza" Style="{StaticResource Muted}" />
+                        <TextBlock Text="{Binding LatencyScore}" Style="{StaticResource BigNumber}" />
+                        <TextBlock Text="{Binding LatencyNote}" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                </Border>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Interventi attivi" Style="{StaticResource Muted}" />
+                        <TextBlock Text="{Binding ActiveTweaks}" Style="{StaticResource BigNumber}" />
+                        <TextBlock Text="{Binding SessionSummary}" Style="{StaticResource Muted}" />
+                    </StackPanel>
+                </Border>
+            </UniformGrid>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3*" />
+                    <ColumnDefinition Width="2*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Latenza: prima e dopo" Style="{StaticResource H2}" />
+                        <c:LineChart Series="{Binding Chart}" Height="220" EmptyText="Nessuna misura: esegui una misura di latenza dalla pagina Misure." />
+                        <ItemsControl ItemsSource="{Binding Bars}" Margin="0,12,0,0" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Questo PC" Style="{StaticResource H2}" />
+                        <ItemsControl ItemsSource="{Binding Hardware}" />
+                        <TextBlock Text="{Binding TierDescription}" Style="{StaticResource Muted}" Margin="0,8,0,0" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Osservazioni principali" Style="{StaticResource H2}" />
+                    <ItemsControl ItemsSource="{Binding TopFindings}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

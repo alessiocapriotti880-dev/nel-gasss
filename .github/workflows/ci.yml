@@ -75,6 +75,20 @@ jobs:
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test ram --seconds 20 --mb 512
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test gpu --seconds 10 --warp
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test vram --seconds 10 --warp
+      # Interfaccia WPF: apre ogni pagina con l'analisi reale, salva un'immagine e gli errori di binding.
+      # Le immagini sono stampate in base64 nel log per poterle controllare senza scaricare gli artifact.
+      - name: Smoke test interfaccia
+        shell: pwsh
+        run: |
+          $p = Start-Process -FilePath "src/PcOptimizer.App/bin/Release/net8.0-windows/PcOptimizerPro.exe" -ArgumentList "--smoke-test", "ui-smoke" -Wait -PassThru
+          Get-Content ui-smoke/bindings.txt -ErrorAction SilentlyContinue
+          Get-Content ui-smoke/error.txt -ErrorAction SilentlyContinue
+          foreach ($f in Get-ChildItem ui-smoke/*.jpg) {
+            "=====IMG $($f.Name)====="
+            [Convert]::ToBase64String([IO.File]::ReadAllBytes($f.FullName))
+            "=====END====="
+          }
+          exit $p.ExitCode
       # Avvisi ed errori del log dell'app (con stack trace): diagnosi dei problemi visibili solo su Windows reale.
       - name: Log dell'app
         if: always()
@@ -93,3 +107,4 @@ jobs:
             bench-before.json
             bench-after.json
             plan.json
+            ui-smoke

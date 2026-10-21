@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Logica dell'interfaccia (MVVM) indipendente da WPF: view model (ViewModels/), dati dei grafici (Charts/) e servizi
+    (Services/: contratto IOptimizerServices e la sua implementazione Windows che collega tutti i moduli).
+    Target net8.0 così i view model si provano con servizi simulati anche fuori da Windows.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PcOptimizer.Presentation</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Hardware\PcOptimizer.Hardware.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Analysis\PcOptimizer.Analysis.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Benchmark\PcOptimizer.Benchmark.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Tweaks\PcOptimizer.Tweaks.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Optimization\PcOptimizer.Optimization.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Tuning\PcOptimizer.Tuning.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PcOptimizer.Presentation.Tests" />
+  </ItemGroup>
+
+</Project>

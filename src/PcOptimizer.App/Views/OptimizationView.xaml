@@ -1,0 +1,176 @@
+<UserControl x:Class="PcOptimizer.App.Views.OptimizationView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Margin="0,0,12,12">
+            <TextBlock Text="Ottimizzazione" Style="{StaticResource H1}" />
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="{Binding ProfileDescription}" Margin="0,0,0,10" />
+                    <WrapPanel>
+                        <Button Content="Seleziona i consigliati" Command="{Binding SelectRecommendedCommand}" />
+                        <Button Content="Deseleziona tutto" Command="{Binding ClearSelectionCommand}" />
+                        <Button Content="Applica i selezionati" Style="{StaticResource PrimaryButton}" Command="{Binding ApplyCommand}" IsEnabled="{Binding State.IsIdle}" />
+                        <Button Content="Riprendi dopo il riavvio" Command="{Binding ResumeCommand}"
+                                Visibility="{Binding CanResume, Converter={StaticResource BoolToVisibility}}" />
+                        <Button Content="Ripristina tutto" Style="{StaticResource DangerButton}" Command="{Binding RevertAllCommand}" IsEnabled="{Binding State.IsIdle}" />
+                    </WrapPanel>
+                    <WrapPanel>
+                        <CheckBox Content="Misura prima e dopo e annulla ciò che non migliora (consigliato)" IsChecked="{Binding Measure}" />
+                        <CheckBox Content="Mostra anche gli interventi non applicabili" IsChecked="{Binding ShowNotApplicable}" />
+                    </WrapPanel>
+                    <TextBlock Text="{Binding SelectionSummary}" Style="{StaticResource Muted}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Visibility="{Binding SessionSummary, Converter={StaticResource NullToVisibility}}">
+                <StackPanel>
+                    <TextBlock Text="Ultima sessione" Style="{StaticResource H2}" />
+                    <TextBlock Text="{Binding SessionSummary}" Margin="0,0,0,8" />
+                    <ItemsControl ItemsSource="{Binding SessionResults}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,0,0,6">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="130" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border Style="{StaticResource Badge}" HorizontalAlignment="Left" Background="{Binding Outcome, Converter={StaticResource LevelToBrush}}">
+                                        <TextBlock Text="{Binding Outcome}" Foreground="#FF0B1220" FontSize="11" FontWeight="SemiBold" />
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Title}" />
+                                        <TextBlock Text="{Binding Explanation}" Style="{StaticResource Muted}" />
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <ItemsControl ItemsSource="{Binding SessionEvents}" Margin="0,8,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding}" Style="{StaticResource Muted}" />
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+
+            <ItemsControl ItemsSource="{Binding Groups}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border Style="{StaticResource Card}">
+                            <StackPanel>
+                                <TextBlock Text="{Binding Name}" Style="{StaticResource H2}" />
+                                <ItemsControl ItemsSource="{Binding Items}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border BorderBrush="{StaticResource Border}" BorderThickness="0,0,0,1" Padding="0,8">
+                                                <StackPanel>
+                                                    <DockPanel>
+                                                        <CheckBox DockPanel.Dock="Left" Style="{StaticResource Toggle}" Margin="0,0,12,0"
+                                                                  IsChecked="{Binding IsSelected}" IsEnabled="{Binding IsApplicable}" />
+                                                        <Button DockPanel.Dock="Right" Content="Annulla" Margin="8,0,0,0" Padding="10,3"
+                                                                Command="{Binding DataContext.RevertItemCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                CommandParameter="{Binding}"
+                                                                Visibility="{Binding IsActive, Converter={StaticResource BoolToVisibility}}" />
+                                                        <ToggleButton DockPanel.Dock="Right" Content="Dettagli" IsChecked="{Binding IsExpanded}" Margin="8,0,0,0" Padding="10,3"
+                                                                      Foreground="{StaticResource Text}" Background="{StaticResource SurfaceRaised}" BorderBrush="{StaticResource Border}" />
+                                                        <StackPanel>
+                                                            <WrapPanel>
+                                                                <TextBlock Text="{Binding Title}" FontWeight="SemiBold" Margin="0,0,10,0" />
+                                                                <Border Style="{StaticResource Badge}" Background="{Binding RiskLevel, Converter={StaticResource LevelToBrush}}">
+                                                                    <TextBlock Text="{Binding RiskText}" Foreground="#FF0B1220" FontSize="11" />
+                                                                </Border>
+                                                                <Border Style="{StaticResource Badge}" Background="{StaticResource SurfaceRaised}">
+                                                                    <TextBlock Text="{Binding EvidenceText}" FontSize="11" />
+                                                                </Border>
+                                                                <Border Style="{StaticResource Badge}" Background="{StaticResource Accent}"
+                                                                        Visibility="{Binding IsRecommended, Converter={StaticResource BoolToVisibility}}">
+                                                                    <TextBlock Text="Consigliato" Foreground="#FF0B1220" FontSize="11" />
+                                                                </Border>
+                                                            </WrapPanel>
+                                                            <TextBlock Style="{StaticResource Muted}">
+                                                                <Run Text="{Binding Status, Mode=OneWay}" /> · <Run Text="{Binding Flags, Mode=OneWay}" />
+                                                            </TextBlock>
+                                                            <TextBlock Text="{Binding Reason}" Style="{StaticResource Muted}"
+                                                                       Visibility="{Binding Reason, Converter={StaticResource NullToVisibility}}" />
+                                                        </StackPanel>
+                                                    </DockPanel>
+                                                    <StackPanel Margin="52,8,0,0" Visibility="{Binding IsExpanded, Converter={StaticResource BoolToVisibility}}">
+                                                        <TextBlock Text="{Binding Tweak.WhatChanges, StringFormat=Cosa cambia: {0}}" Margin="0,0,0,4" />
+                                                        <TextBlock Text="{Binding Tweak.Why, StringFormat=Perché: {0}}" Margin="0,0,0,4" />
+                                                        <TextBlock Text="{Binding Tweak.ExpectedBenefit, StringFormat=Beneficio atteso: {0}}" Margin="0,0,0,4" />
+                                                        <TextBlock Text="{Binding Tweak.HowToRevert, StringFormat=Come si annulla: {0}}" Style="{StaticResource Muted}" Margin="0,0,0,4" />
+                                                        <TextBlock Text="{Binding Tweak.Caution, StringFormat=Attenzione: {0}}" Foreground="{StaticResource Warn}"
+                                                                   Visibility="{Binding Tweak.Caution, Converter={StaticResource NullToVisibility}}" />
+                                                        <StackPanel Visibility="{Binding Tweak.AffectsSecurity, Converter={StaticResource BoolToVisibility}}" Margin="0,6,0,0">
+                                                            <TextBlock Text="{Binding Tweak.SecurityWarning}" Foreground="{StaticResource Bad}" Margin="0,0,0,6" />
+                                                            <CheckBox Content="Ho letto l'avviso e scelgo di ridurre questa protezione" IsChecked="{Binding SecurityConfirmed}" />
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Giochi" Style="{StaticResource H2}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8"
+                               Text="Per gli interventi del singolo gioco (GPU preferita, priorità all'avvio, ottimizzazioni a schermo intero): impostazioni standard di Windows, nessun accesso al processo del gioco." />
+                    <ItemsControl ItemsSource="{Binding Games}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <DockPanel Margin="0,0,0,6">
+                                    <Button DockPanel.Dock="Right" Content="Rimuovi" Padding="10,3"
+                                            Command="{Binding DataContext.RemoveGameCommand, RelativeSource={RelativeSource AncestorType=UserControl}}" CommandParameter="{Binding}" />
+                                    <TextBlock>
+                                        <Run Text="{Binding Label, Mode=OneWay}" FontWeight="SemiBold" /> <Run Text="{Binding Value, Mode=OneWay}" Foreground="{StaticResource TextMuted}" />
+                                    </TextBlock>
+                                </DockPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Aggiungi un gioco" HorizontalAlignment="Left" Command="{Binding AddGameCommand}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Indicazioni guidate" Style="{StaticResource H2}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8" Text="Impostazioni che l'app non modifica da sola: segui i passaggi." />
+                    <ItemsControl ItemsSource="{Binding Guidance}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Manutenzione" Style="{StaticResource H2}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8" Text="Operazioni non annullabili: prima l'anteprima, poi la conferma." />
+                    <ItemsControl ItemsSource="{Binding Maintenance}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,0,0,10">
+                                    <TextBlock Text="{Binding Info.Title}" FontWeight="SemiBold" />
+                                    <TextBlock Text="{Binding Info.Description}" Style="{StaticResource Muted}" />
+                                    <WrapPanel Margin="0,6,0,0">
+                                        <Button Content="Anteprima" Command="{Binding PreviewCommand}" />
+                                        <Button Content="Esegui" Command="{Binding RunCommand}" />
+                                    </WrapPanel>
+                                    <TextBlock Text="{Binding Result}" />
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,66 @@
+<Window x:Class="PcOptimizer.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:PcOptimizer.Presentation.ViewModels;assembly=PcOptimizer.Presentation"
+        xmlns:v="clr-namespace:PcOptimizer.App.Views"
+        Title="PC Optimizer Pro" Width="1360" Height="860" MinWidth="1000" MinHeight="640"
+        Background="{StaticResource Background}" FontFamily="Segoe UI">
+
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type vm:DashboardViewModel}"><v:DashboardView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:AnalysisViewModel}"><v:AnalysisView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:BenchmarkViewModel}"><v:BenchmarkView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:OptimizationViewModel}"><v:OptimizationView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:TuningViewModel}"><v:TuningView /></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:LogViewModel}"><v:LogView /></DataTemplate>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="230" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <!-- Menu laterale -->
+        <Border Grid.RowSpan="2" Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="0,0,1,0">
+            <DockPanel>
+                <StackPanel DockPanel.Dock="Top" Margin="20,22,20,18">
+                    <TextBlock Text="PC Optimizer Pro" FontSize="18" FontWeight="SemiBold" />
+                    <TextBlock Text="Latenza e frame time, misurati" Style="{StaticResource Muted}" />
+                </StackPanel>
+                <TextBlock DockPanel.Dock="Bottom" Margin="20,12" Style="{StaticResource Muted}" Text="{Binding ElevationText}" />
+                <ListBox ItemsSource="{Binding Pages}" SelectedItem="{Binding SelectedPage}" Background="Transparent" BorderThickness="0"
+                         ItemContainerStyle="{StaticResource NavItem}">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Orientation="Horizontal">
+                                <TextBlock Text="{Binding Icon}" FontFamily="{StaticResource IconFont}" FontSize="16" Width="28"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                <TextBlock Text="{Binding Title}" FontSize="14"
+                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </DockPanel>
+        </Border>
+
+        <!-- Pagina -->
+        <ContentControl Grid.Column="1" Content="{Binding SelectedPage}" Margin="24,20,12,0" />
+
+        <!-- Barra di stato: operazione in corso, avanzamento, annulla -->
+        <Border Grid.Row="1" Grid.Column="1" Background="{StaticResource Surface}" BorderBrush="{StaticResource Border}" BorderThickness="0,1,0,0" Padding="16,8">
+            <DockPanel>
+                <Button DockPanel.Dock="Right" Content="Annulla" Command="{Binding CancelCommand}" Margin="8,0,0,0"
+                        Visibility="{Binding State.IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                <ProgressBar DockPanel.Dock="Right" Width="140" Height="4" IsIndeterminate="True" Margin="12,0"
+                             Visibility="{Binding State.IsBusy, Converter={StaticResource BoolToVisibility}}" />
+                <TextBlock Text="{Binding State.Status}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" TextWrapping="NoWrap" />
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

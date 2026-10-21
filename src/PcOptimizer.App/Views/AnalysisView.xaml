@@ -1,0 +1,56 @@
+<UserControl x:Class="PcOptimizer.App.Views.AnalysisView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ScrollViewer>
+        <StackPanel Margin="0,0,12,12">
+            <DockPanel Margin="0,0,0,8">
+                <Button DockPanel.Dock="Right" Content="Analizza di nuovo" Command="{Binding AnalyzeCommand}" IsEnabled="{Binding State.IsIdle}" />
+                <TextBlock Text="Analisi" Style="{StaticResource H1}" />
+            </DockPanel>
+            <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,12"
+                       Text="Sola lettura: l'analisi legge configurazione e hardware senza modificare nulla e senza aprire i processi dei giochi o degli anti-cheat." />
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Hardware" Style="{StaticResource H2}" />
+                        <ItemsControl ItemsSource="{Binding Hardware}" />
+                    </StackPanel>
+                </Border>
+                <Border Grid.Column="1" Style="{StaticResource Card}">
+                    <StackPanel>
+                        <TextBlock Text="Configurazione di Windows" Style="{StaticResource H2}" />
+                        <ItemsControl ItemsSource="{Binding System}" />
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Osservazioni" Style="{StaticResource H2}" />
+                    <ItemsControl ItemsSource="{Binding Findings}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Impostazioni diverse dai valori predefiniti di Windows" Style="{StaticResource H2}" />
+                    <TextBlock Style="{StaticResource Muted}" Margin="0,0,0,8"
+                               Text="Spesso lasciate da tweak o altri ottimizzatori: la sezione Ottimizzazione permette di ripristinarle." />
+                    <ItemsControl ItemsSource="{Binding ModifiedSettings}" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}">
+                <StackPanel>
+                    <TextBlock Text="Software riconosciuto" Style="{StaticResource H2}" />
+                    <ItemsControl ItemsSource="{Binding Software}" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

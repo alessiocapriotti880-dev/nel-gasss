@@ -3,16 +3,20 @@
 Ottimizzatore di latenza e frame time per Windows 10/11 (64 bit), basato su misure reali:
 ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 
-> Stato: sviluppo per moduli.
-> Completati: **1 – Core** (interventi transazionali, giornale, rollback, backup, log),
-> **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni),
-> **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default),
-> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico),
-> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima),
-> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback),
-> **7 – Overclock e undervolt guidati** (checklist del BIOS per produttore, limiti di sicurezza fissi, procedure a passi, test di stabilità CPU/RAM/GPU/VRAM) e
-> **8 – Interfaccia grafica** (WPF: panoramica, analisi, misure con grafici prima/dopo, ottimizzazione con interruttori e badge di rischio, overclock e undervolt, registro).
-> Istruzioni complete di compilazione e test arriveranno con il modulo 9.
+Due programmi, stesse funzioni:
+- **`PcOptimizerPro.exe`**: applicazione grafica (WPF, in italiano) con panoramica, analisi, misure con grafici prima/dopo,
+  ottimizzazione con interruttori e badge di rischio, overclock e undervolt guidati, registro;
+- **`pcopt.exe`**: strumento a riga di comando con gli stessi moduli (utile per script, diagnosi e CI).
+
+### Regole che il codice rispetta (verificate dai test)
+- Nessuna modifica a file di sistema protetti, DLL, driver o kernel; nessun driver custom (i sensori della CPU si leggono da HWiNFO, se aperto).
+- Nessuna interazione con i processi dei giochi o con gli anti-cheat: niente handle sui processi; le impostazioni per gioco sono
+  meccanismi standard di Windows applicati all'avvio; servizi e driver anti-cheat non vengono mai toccati.
+- Windows Update, Defender e protezioni di sicurezza non vengono mai disattivati; l'unico intervento che riduce una
+  protezione (integrità della memoria) richiede una conferma esplicita, non è mai preselezionato e viene annullato se non porta miglioramenti misurati.
+- Nessun FPS promesso: il programma mostra solo risultati misurati e dichiara "migliorato" solo con significatività statistica.
+- Il BIOS non viene mai scritto e nessun firmware viene flashato: overclock e undervolt sono solo guidati.
+- Prima di qualsiasi modifica: punto di ripristino (senza, non modifica nulla) e backup `.reg`/JSON delle impostazioni toccate.
 
 ## Struttura
 
@@ -30,14 +34,50 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 
-## Compilazione rapida
+## Compilazione e test
 
-Richiede .NET 8 SDK.
+Requisiti: **.NET 8 SDK** (8.0.4xx). Su Windows 10/11 x64 per eseguire; la compilazione e i test unitari funzionano anche
+su Linux e macOS (i progetti Windows sono compilati con `EnableWindowsTargeting`).
 
 ```
-dotnet build
-dotnet test
+git clone <repository> && cd nel-gasss
+dotnet restore
+dotnet build -c Release
+dotnet test -c Release
 ```
+
+I test (circa 400) coprono logica pura e moduli con servizi simulati; una parte gira **solo su Windows** e altrove
+termina subito: provider reali (registro su una chiave di prova, piano energetico, attività pianificate, BCD in lettura),
+attività pianificata di ripresa, test GPU con il rasterizzatore software WARP.
+
+### Eseguibili da distribuire
+
+```
+dotnet publish src/PcOptimizer.App -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o publish
+dotnet publish src/PcOptimizer.Cli -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -o publish
+```
+
+`publish\PcOptimizerPro.exe` chiede l'elevazione all'avvio (manifest `requireAdministrator`): servono per le misure ETW,
+il punto di ripristino e le modifiche. Strumenti esterni facoltativi: PresentMon (frame time) in `publish\tools\`,
+HWiNFO con "Shared Memory Support" (temperature e potenza della CPU). Tabelle aggiornate in `publish\data\`.
+
+### Integrazione continua
+
+`.github/workflows/ci.yml` su `windows-latest`: compilazione, test (anche quelli solo Windows), poi prove reali su una VM
+Windows Server: scansione, analisi, due misure di latenza con confronto, piano degli interventi, sessione (deve
+fermarsi senza modifiche perché Windows Server non ha il Ripristino configurazione di sistema), test di stabilità brevi
+(CPU, RAM, GPU/VRAM con WARP) e prova dell'interfaccia che apre ogni pagina e fallisce se ci sono errori di binding.
+
+### Annullare tutto
+- Dall'app: Ottimizzazione > **Ripristina tutto** (o "Annulla" sul singolo intervento); da riga di comando `pcopt rollback --all`.
+- Senza l'app: doppio clic sui file `original.reg` in `%ProgramData%\PcOptimizerPro\backups`, oppure il punto di
+  ripristino "PC Optimizer Pro - prima delle ottimizzazioni" (Ripristino configurazione di sistema).
+
+### Limiti noti
+- Le misure in macchina virtuale non rappresentano un PC da gioco; i valori di DPC/ISR dipendono dall'hypervisor.
+- Il test della RAM gira dentro Windows: trova gli errori evidenti, non sostituisce MemTest86/TestMem5.
+- I percorsi dei menu del BIOS sono tipici e cambiano con le versioni: verificali con la ricerca del BIOS.
+- Temperature della CPU solo con HWiNFO aperto; GPU AMD/Intel senza NVML: temperatura dal kernel grafico di Windows, senza frequenze.
 
 ## Provare la scansione hardware su Windows
 

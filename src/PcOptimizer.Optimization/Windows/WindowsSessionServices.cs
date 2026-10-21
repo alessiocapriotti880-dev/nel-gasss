@@ -92,7 +92,7 @@ public sealed class ScheduledTaskResumeScheduler(string executable, string argum
                 Marshal.FinalReleaseComObject(service);
             }
         }
-        catch (COMException ex)
+        catch (Exception ex) when (ex is COMException or FileNotFoundException or DirectoryNotFoundException)
         {
             log.LogDebug(ex, "Nessuna attività di ripresa da cancellare");
         }
@@ -113,11 +113,12 @@ public sealed class ScheduledTaskResumeScheduler(string executable, string argum
         {
             return root.GetFolder("\\" + FolderName);
         }
-        catch (COMException) when (create)
+        // Tramite il binder COM "cartella inesistente" arriva come FileNotFoundException, non COMException.
+        catch (Exception ex) when (create && ex is COMException or FileNotFoundException or DirectoryNotFoundException)
         {
             return root.CreateFolder(FolderName);
         }
-        catch (COMException)
+        catch (Exception ex) when (ex is COMException or FileNotFoundException or DirectoryNotFoundException)
         {
             return null;
         }

@@ -67,8 +67,9 @@ public sealed class ScheduledTaskProvider : ISettingProvider
             dynamic folder = service.GetFolder(folderPath);
             return folder.GetTask(name);
         }
-        catch (COMException ex) when (ex.HResult is FileNotFound or PathNotFound)
+        catch (Exception ex) when (ex.HResult is FileNotFound or PathNotFound)
         {
+            // Tramite il binder COM l'errore arriva come FileNotFoundException/DirectoryNotFoundException, non COMException.
             return null;
         }
         finally

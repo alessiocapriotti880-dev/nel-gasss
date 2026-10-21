@@ -70,7 +70,10 @@ jobs:
       - name: Log dell'app
         if: always()
         shell: pwsh
-        run: Get-Content "$env:ProgramData\PcOptimizerPro\logs\*.log" | Select-String -Pattern "\[WRN\]|\[ERR\]|   at |Exception" | Select-Object -First 150
+        run: |
+          if (Test-Path "$env:ProgramData\PcOptimizerPro\logs") {
+            Get-Content "$env:ProgramData\PcOptimizerPro\logs\*.log" | Select-String -Pattern "\[WRN\]|\[ERR\]|   at |Exception" | Select-Object -First 150
+          }
       - uses: actions/upload-artifact@v4
         if: always()
         with:

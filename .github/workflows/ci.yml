@@ -4,6 +4,11 @@ on:
   push:
   pull_request:
 
+# Un nuovo push sullo stesso branch annulla l'esecuzione precedente ancora in corso.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-test:
     # Windows: le API usate dai provider (registro, SCM, powrprof, WMI) esistono solo lì.
@@ -21,3 +26,14 @@ jobs:
         with:
           name: test-results
           path: TestResults
+
+      # Smoke test: esegue il rilevamento reale (WMI, registro, CPUID, API native) su Windows.
+      # Il runner è una VM senza GPU né monitor: alcune parti risultano vuote, ma ogni errore
+      # di query o di interop compare nel report come "Alcune informazioni non sono state rilevate".
+      - name: Smoke test scansione hardware
+        run: dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- scan --json scan-report.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scan-report
+          path: scan-report.json

@@ -43,6 +43,11 @@ jobs:
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark --duration 15 --pings 20 --label "ci dopo" --no-boot --json bench-after.json
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark list
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- compare --before bench-before.json --after bench-after.json
+      # Catalogo degli interventi costruito dai dati reali, con lo stato di ciascuno (sola lettura).
+      - name: Smoke test piano degli interventi
+        run: |
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- games add "C:\Games\Prova\prova.exe" --name Prova
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- plan --all --json plan.json
       # Avvisi ed errori del log dell'app (con stack trace): diagnosi dei problemi visibili solo su Windows reale.
       - name: Log dell'app
         if: always()
@@ -57,3 +62,4 @@ jobs:
             analysis-report.json
             bench-before.json
             bench-after.json
+            plan.json

@@ -1,0 +1,50 @@
+{
+  // Servizi di Windows che si possono cambiare in sicurezza su un PC da gioco, con le condizioni.
+  // "startMode": tipo di avvio desiderato (Manual o Disabled). "when": condizioni (tutte vere):
+  //   "hdd" (sistema su disco meccanico), "ssd", "lowRam" (8 GB o meno), "desktop".
+  // "recommendedTiers": fasce per cui è preselezionato (Low, Mid, High); vuoto = mai preselezionato.
+  "services": [
+    { "name": "DiagTrack", "title": "Telemetria di Windows (DiagTrack)", "startMode": "Disabled", "evidence": "Privacy",
+      "why": "Raccoglie e invia dati di diagnostica: lavora in background con brevi picchi di CPU e disco.",
+      "benefit": "Meno attività in background; beneficio prestazionale piccolo, soprattutto privacy.",
+      "recommendedTiers": ["Low"] },
+    { "name": "dmwappushservice", "title": "Instradamento messaggi push WAP (telemetria)", "startMode": "Disabled", "evidence": "Privacy",
+      "why": "Usato dalla telemetria per instradare messaggi di gestione del dispositivo.",
+      "benefit": "Solo privacy: nessun effetto prestazionale misurabile.", "recommendedTiers": [] },
+    { "name": "SysMain", "title": "SysMain (Superfetch)", "startMode": "Disabled", "evidence": "Debatable", "when": ["ssd"],
+      "why": "Precarica in RAM i programmi usati spesso. Su SSD il vantaggio è minimo, mentre l'attività di analisi può occupare disco e CPU subito dopo l'avvio.",
+      "benefit": "Meno attività del disco dopo l'avvio; su SSD con poca RAM può però rallentare l'apertura dei programmi: si tiene solo se la misura migliora.",
+      "caution": "Su disco meccanico SysMain è utile: per questo l'intervento è proposto solo con SSD.", "recommendedTiers": [] },
+    { "name": "WSearch", "title": "Indicizzazione dei file (Windows Search)", "startMode": "Disabled", "evidence": "Situational",
+      "why": "Indicizza i file in background: su disco meccanico l'indicizzazione compete con i caricamenti dei giochi.",
+      "benefit": "Niente attività di indicizzazione in background.",
+      "caution": "La ricerca di file in Esplora file e nel menu Start diventa più lenta; la ricerca di Outlook smette di funzionare.",
+      "when": ["hdd"], "recommendedTiers": ["Low"] },
+    { "name": "MapsBroker", "title": "Gestione mappe scaricate", "startMode": "Manual", "evidence": "Privacy",
+      "why": "Aggiorna le mappe offline all'avvio anche se l'app Mappe non viene usata.",
+      "benefit": "Un servizio in meno all'avvio; effetto trascurabile.", "recommendedTiers": [] },
+    { "name": "Spooler", "title": "Spooler di stampa", "startMode": "Manual", "evidence": "Privacy",
+      "why": "Serve solo per stampare; è stato bersaglio di vulnerabilità gravi (PrintNightmare).",
+      "benefit": "Superficie d'attacco ridotta se non stampi; nessun effetto prestazionale.",
+      "caution": "Se usi una stampante, la stampa potrebbe non funzionare finché non riattivi il servizio.", "recommendedTiers": [] },
+    { "name": "Fax", "title": "Fax", "startMode": "Disabled", "evidence": "Privacy",
+      "why": "Servizio fax quasi mai usato.", "benefit": "Nessuno misurabile: pulizia.", "recommendedTiers": [] },
+    { "name": "RetailDemo", "title": "Modalità demo per negozi", "startMode": "Disabled", "evidence": "Privacy",
+      "why": "Serve solo ai PC esposti nei negozi.", "benefit": "Nessuno misurabile: pulizia.", "recommendedTiers": [] }
+  ],
+
+  // Servizi che il programma non tocca MAI, nemmeno se riconosciuti nel catalogo del software:
+  // sicurezza, aggiornamenti (anche dei browser), rete, audio, nucleo di Windows, anti-cheat. '*' finale = prefisso.
+  "protected": [
+    "wuauserv", "UsoSvc", "WaaSMedicSvc", "BITS", "DoSvc", "TrustedInstaller", "CryptSvc",
+    "WinDefend", "WdNisSvc", "WdNisDrv", "WdFilter", "WdBoot", "Sense", "MDCoreSvc", "SecurityHealthService", "wscsvc", "SgrmBroker",
+    "mpssvc", "BFE", "EventLog", "RpcSs", "RpcEptMapper", "DcomLaunch", "LSM", "SamSs", "Schedule", "Power", "PlugPlay",
+    "ProfSvc", "gpsvc", "Winmgmt", "UserManager", "CoreMessagingRegistrar", "StateRepository", "AppXSvc", "ClipSVC", "LicenseManager",
+    "Audiosrv", "AudioEndpointBuilder", "Dhcp", "Dnscache", "nsi", "NlaSvc", "netprofm", "WlanSvc", "Wcmsvc", "iphlpsvc",
+    "VaultSvc", "KeyIso", "Netlogon", "TokenBroker", "W32Time", "Themes", "FontCache", "TabletInputService",
+    "gupdate", "gupdatem", "GoogleUpdater*", "edgeupdate", "edgeupdatem", "MicrosoftEdgeElevationService", "MozillaMaintenance", "brave*",
+    "Steam Client Service", "EABackgroundService", "GalaxyClientService",
+    "XblAuthManager", "XblGameSave", "XboxNetApiSvc", "XboxGipSvc", "GamingServices", "GamingServicesNet",
+    "EasyAntiCheat*", "BEService*", "BEDaisy", "vgc", "vgk", "FACEIT*", "EAAntiCheat*", "PnkBstr*", "ESEA*"
+  ]
+}

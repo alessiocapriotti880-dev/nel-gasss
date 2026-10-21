@@ -6,8 +6,9 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 > Stato: sviluppo per moduli.
 > Completati: **1 – Core** (interventi transazionali, giornale, rollback, backup, log),
 > **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni),
-> **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default) e
-> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico).
+> **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default),
+> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico) e
+> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima).
 > Istruzioni complete di compilazione e test arriveranno con il modulo 9.
 
 ## Struttura
@@ -18,6 +19,7 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Hardware` | Rilevamento hardware (`Windows/`), parser puri (`Parsing/`), tabelle aggiornabili (`Data/*.json`), valutazione: fascia, stima XMP, canali RAM, osservazioni (`Assessment/`) |
 | `src/PcOptimizer.Analysis` | Analisi della configurazione (`Windows/`): servizi, avvio, attività, driver, processi, alimentazione, timer, interrupt/MSI, HAGS, impostazioni di gioco, sicurezza; valutazione pura (`Evaluation/`) e catalogo del software noto (`Data/known-software.json`) |
 | `src/PcOptimizer.Benchmark` | Misure (`Windows/`): sessione ETW del kernel per DPC/ISR, timer ad alta risoluzione, PresentMon, ping, avvio, uso CPU, sensori (NVML, D3DKMT, HWiNFO); calcolo puro (`Statistics/`, `Latency/`, `Frames/`, `Comparison/`): percentili, Mann-Whitney, punteggio, confronto prima/dopo |
+| `src/PcOptimizer.Tweaks` | Catalogo degli interventi (`Catalog/`): alimentazione, servizi, avvio, attività, privacy, effetti visivi, impostazioni di gioco, monitor, MSI, rete, archiviazione, sicurezza, ripristino dei default, giochi; indicazioni guidate (`Guidance/`); manutenzione (`Maintenance/`) |
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 
@@ -92,6 +94,25 @@ Il **punteggio di latenza** (0-100) è indicativo e serve a confrontare misure d
 Il **confronto** dichiara "migliorato" o "peggiorato" solo se la differenza è statisticamente significativa
 (Mann-Whitney sui valori per secondo, p < 0,05), supera la soglia minima della grandezza e supera la variabilità
 osservata fra misure "prima" ripetute: nessun FPS promesso, solo differenze misurate.
+
+## Piano degli interventi
+
+```
+dotnet run --project src/PcOptimizer.Cli -- games add "C:\Giochi\cs2\game\bin\win64\cs2.exe" --name "Counter-Strike 2"
+dotnet run --project src/PcOptimizer.Cli -- plan
+```
+
+Mostra, sezione per sezione, gli interventi possibili su questo PC con lo stato attuale (già a posto / da applicare),
+il rischio, l'evidenza (documentato, dipende dal sistema, da verificare con la misura, ripristino, privacy), se richiede
+il riavvio e se l'effetto è misurabile; `[x]` indica quelli consigliati per la fascia. Gli interventi nascono dai dati
+reali: servizi e programmi in avvio riconosciuti, dispositivi con interrupt a linea, parametri che il driver di rete
+dichiara, impostazioni lasciate da altri ottimizzatori (con il ripristino del valore di Windows).
+
+Regole del catalogo, verificate dai test:
+- non tocca mai servizi, attività o chiavi di Windows Update, Defender, anti-cheat, launcher dei giochi, aggiornamenti dei browser;
+- gli interventi che riducono una protezione (integrità della memoria) non sono mai preselezionati e mostrano un avviso esplicito;
+- le impostazioni per gioco sono standard di Windows (preferenza GPU, compatibilità, priorità all'avvio): nessun accesso al processo del gioco;
+- ogni intervento si applica e si annulla tramite il motore transazionale (testato sull'intero catalogo).
 
 ## Tabelle dati
 

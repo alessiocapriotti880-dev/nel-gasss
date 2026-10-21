@@ -14,8 +14,13 @@ using PcOptimizer.Benchmark.Model;
 using PcOptimizer.Benchmark.Storage;
 using PcOptimizer.Benchmark.Windows;
 using PcOptimizer.Cli;
+using PcOptimizer.Core.Tweaks;
+using PcOptimizer.Core.Windows;
+using PcOptimizer.Tweaks.Context;
+using PcOptimizer.Tweaks.Guidance;
 using PcOptimizer.Core;
 using PcOptimizer.Core.Logging;
+using PcOptimizer.Core.Model;
 using PcOptimizer.Hardware.Assessment;
 using PcOptimizer.Hardware.Database;
 using PcOptimizer.Hardware.Windows;
@@ -34,6 +39,10 @@ switch (command)
         return await BenchmarkAsync(options);
     case "compare":
         return Compare(options);
+    case "plan":
+        return await PlanAsync(options);
+    case "games":
+        return Games(options);
     case "help" or "--help" or "-h" or "/?":
         PrintHelp();
         return 0;
@@ -69,6 +78,13 @@ static void PrintHelp()
 
         pcopt benchmark list
             Elenca le misure salvate.
+
+        pcopt plan [--all] [--json <file>]
+            Mostra il piano di ottimizzazione per la fascia del PC: interventi per sezione con stato attuale, rischio,
+            evidenza e consigliati [x], più le indicazioni guidate. Sola lettura.
+
+        pcopt games list | add <percorso\gioco.exe> [--name <nome>] | remove <nome o exe>
+            Giochi per gli interventi specifici (GPU preferita, priorità, ottimizzazioni a schermo intero).
 
         pcopt compare --before <id>[,<id>...] --after <id>[,<id>...]
             Confronta misure (id dall'elenco o percorsi di file): verdetto per ogni grandezza solo se la
@@ -235,6 +251,78 @@ static List<BenchmarkRun>? ResolveRuns(BenchmarkStore store, string? ids)
     }
 
     return runs;
+}
+
+static async Task<int> PlanAsync(string[] options)
+{
+    using var loggerFactory = CreateLoggerFactory();
+    var paths = new AppPaths();
+    var inspection = await Inspection.RunAsync(loggerFactory, DataDirectories(options), new GameLibraryStore(paths).Load());
+    var engine = new TweakEngine(WindowsSettingProviders.CreateStore(), new PcOptimizer.Core.Journal.ChangeJournal(paths.JournalFile),
+        new PcOptimizer.Core.Backup.BackupService(paths.Backups), loggerFactory.CreateLogger<TweakEngine>());
+    var statuses = inspection.Tweaks.ToDictionary(t => t.Id, t => SafeDetect(engine, t, inspection.Context));
+    var guidance = GuidanceCatalog.Build(inspection.Context);
+    PlanPrinter.Print(inspection, t => statuses[t.Id], Flag(options, "--all"), guidance);
+    await SaveJsonAsync(options, new
+    {
+        tier = inspection.Context.Tier,
+        tweaks = inspection.Tweaks.Select(t => new
+        {
+            t.Id, t.Title, t.Group, t.Category, t.Risk, t.Evidence, t.RequiresReboot, t.AffectsSecurity, t.Recommended, t.MeasuredBy,
+            Status = statuses[t.Id], t.WhatChanges, t.Why, t.ExpectedBenefit, t.Caution, t.HowToRevert,
+            Changes = t.IsApplicable(inspection.Context, out var reason) ? t.PlanChanges(inspection.Context).Select(c => new { Target = c.Target.Describe(), Desired = c.Desired.ToString() }) : null,
+            NotApplicable = reason,
+        }),
+        guidance,
+    });
+    return 0;
+}
+
+static TweakStatus SafeDetect(TweakEngine engine, ITweak tweak, TweakContext context)
+{
+    try
+    {
+        return engine.Detect(tweak, context);
+    }
+    catch (Exception ex) when (ex is not OutOfMemoryException)
+    {
+        // Lettura non riuscita (es. impostazione protetta): l'intervento si mostra come da applicare.
+        return TweakStatus.NotApplied;
+    }
+}
+
+static int Games(string[] options)
+{
+    var store = new GameLibraryStore(new AppPaths());
+    var sub = options.FirstOrDefault()?.ToLowerInvariant();
+    try
+    {
+        var library = sub switch
+        {
+            "add" when options.Length > 1 => store.Add(options[1], Option(options, "--name")),
+            "remove" when options.Length > 1 => store.Remove(options[1]),
+            "list" or null => store.Load(),
+            _ => null,
+        };
+        if (library is null)
+        {
+            Console.Error.WriteLine("Uso: pcopt games list | add <gioco.exe> [--name <nome>] | remove <nome o exe>");
+            return 2;
+        }
+
+        ConsoleOutput.Heading(library.Games.Count == 0 ? "Nessun gioco indicato" : $"Giochi ({library.Games.Count})");
+        foreach (var g in library.Games)
+        {
+            Console.WriteLine($"  {g.Name}: {g.ExecutablePath}");
+        }
+
+        return 0;
+    }
+    catch (Exception ex) when (ex is ArgumentException or IOException or UnauthorizedAccessException)
+    {
+        Console.Error.WriteLine(ex.Message);
+        return 1;
+    }
 }
 
 static bool Flag(string[] options, string name) => options.Any(o => o.Equals(name, StringComparison.OrdinalIgnoreCase));

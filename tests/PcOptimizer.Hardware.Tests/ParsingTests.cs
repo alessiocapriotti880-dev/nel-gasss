@@ -97,6 +97,9 @@ public sealed class ParsingTests
         Assert.Equal(0x12Bu, MicrocodeParser.Parse(CpuVendor.Intel, [0, 0, 0, 0, 0x2B, 0x01, 0, 0]));
         Assert.Equal(0x0A201052u, MicrocodeParser.Parse(CpuVendor.Amd, [0x52, 0x10, 0x20, 0x0A, 0, 0, 0, 0]));
         Assert.Null(MicrocodeParser.Parse(CpuVendor.Intel, new byte[8]));
+        // Hyper-V riporta 0xFFFFFFFF al posto della revisione reale (visto nello smoke test della CI).
+        Assert.Null(MicrocodeParser.Parse(CpuVendor.Amd, [0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0]));
+        Assert.Null(MicrocodeParser.Parse(CpuVendor.Intel, [0, 0, 0, 0, 0xFF, 0xFF, 0xFF, 0xFF]));
         Assert.Null(MicrocodeParser.Parse(CpuVendor.Intel, null));
     }
 
@@ -170,6 +173,15 @@ public sealed class ParsingTests
     [InlineData("", BoardVendor.Unknown)]
     public void Board_vendor_is_normalized(string manufacturer, BoardVendor expected) =>
         Assert.Equal(expected, BoardParser.ParseVendor(manufacturer));
+
+    [Fact]
+    public void Virtual_machines_are_recognized()
+    {
+        Assert.True(BoardParser.LooksVirtualMachine("Virtual Machine", "Microsoft Corporation"));
+        Assert.True(BoardParser.LooksVirtualMachine(null, "VMware, Inc."));
+        Assert.True(BoardParser.LooksVirtualMachine("Hyper-V UEFI Release v4.1"));
+        Assert.False(BoardParser.LooksVirtualMachine("ROG STRIX Z790-E GAMING WIFI", "ASUSTeK COMPUTER INC.", "American Megatrends Inc."));
+    }
 
     [Fact]
     public void Laptops_are_detected_from_system_type_or_chassis()

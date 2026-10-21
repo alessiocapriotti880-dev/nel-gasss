@@ -46,6 +46,12 @@ internal static class DisplayDetector
                 refresh = targetMode.TargetVideoSignalInfo.VSyncFreq.Value;
             }
 
+            // 0 o 1 Hz significano "frequenza predefinita" (schermi virtuali): valore non noto.
+            if (refresh < 20)
+            {
+                refresh = 0;
+            }
+
             var connection = DisplayParser.Connection(outputTechnology != 0 ? outputTechnology : target.OutputTechnology);
             result.Add(new DisplayInfo
             {

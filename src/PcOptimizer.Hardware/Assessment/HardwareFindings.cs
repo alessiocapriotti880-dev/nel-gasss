@@ -171,7 +171,8 @@ internal static class HardwareFindings
         for (var i = 0; i < displays.Count; i++)
         {
             var d = displays[i];
-            if (d.MaxRefreshHz is not { } max || max <= Math.Round(d.RefreshHz) + 2)
+            // Sotto 20 Hz il valore non è una frequenza reale (schermi virtuali riportano 0 o 1 = "predefinita").
+            if (d.RefreshHz < 20 || d.MaxRefreshHz is not { } max || max <= Math.Round(d.RefreshHz) + 2)
             {
                 continue;
             }
@@ -299,6 +300,15 @@ internal static class HardwareFindings
     private static void AddPlatform(Input input, List<Finding> findings)
     {
         var p = input.Profile;
+        if (input.Board.IsVirtualMachine)
+        {
+            findings.Add(new Finding("system-virtual-machine", FindingSeverity.Warning, "Sistema",
+                "Il sistema è una macchina virtuale",
+                "Hardware, frequenze e misure di una macchina virtuale non rappresentano un PC reale: " +
+                "gli interventi di ottimizzazione qui non hanno effetto utile.",
+                "Esegui PC Optimizer Pro direttamente sul PC fisico."));
+        }
+
         if (p.Board.IsLaptop && p.Board.OnBattery == true)
         {
             findings.Add(new Finding("power-on-battery", FindingSeverity.Warning, "Sistema",

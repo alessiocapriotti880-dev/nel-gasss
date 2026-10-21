@@ -9,7 +9,8 @@ public static class MicrocodeParser
     /// <summary>
     /// Windows salva il valore a 64 bit del registro MSR 0x8B (REG_BINARY, little-endian).
     /// Intel tiene la revisione nei 32 bit alti, AMD (PATCH_LEVEL) nei 32 bit bassi.
-    /// Restituisce null se il valore manca o è zero (tipico delle macchine virtuali).
+    /// Restituisce null se il valore manca, è zero o vale 0xFFFFFFFF (riportato dagli hypervisor
+    /// come Hyper-V al posto della revisione reale).
     /// </summary>
     public static uint? Parse(CpuVendor vendor, byte[]? raw)
     {
@@ -35,7 +36,7 @@ public static class MicrocodeParser
             value = BitConverter.ToUInt32(raw, 0);
         }
 
-        return value == 0 ? null : value;
+        return value is 0 or uint.MaxValue ? null : value;
     }
 }
 
@@ -226,6 +227,17 @@ public static partial class BoardParser
         var m = ChipsetRegex().Match(product.ToUpperInvariant());
         return m.Success ? m.Groups[1].Value + m.Groups[2].Value : null;
     }
+
+    private static readonly string[] VirtualMachineMarkers =
+        ["Virtual Machine", "VMware", "VirtualBox", "QEMU", "KVM", "Parallels", "Hyper-V", "Xen", "Bochs"];
+
+    /// <summary>
+    /// Macchina virtuale riconosciuta da modello, scheda o BIOS (es. "Virtual Machine" di Hyper-V).
+    /// Il bit "hypervisor" di CPUID non basta: è attivo anche sui PC reali con VBS/Hyper-V.
+    /// </summary>
+    public static bool LooksVirtualMachine(params string?[] identifiers) =>
+        identifiers.Any(id => id is not null &&
+            VirtualMachineMarkers.Any(m => id.Contains(m, StringComparison.OrdinalIgnoreCase)));
 
     // Una "A" iniziale opzionale copre la nomenclatura Gigabyte per AMD (AB350, AX370).
     [GeneratedRegex(@"(?<![A-Z0-9])A?(TRX|WRX|[ABHQWXZ])(\d{2,3})(?!\d)")]

@@ -189,6 +189,9 @@ public sealed record BoardAssessment
     public OcSupport MemoryOverclock { get; init; }
 
     public string? ChipsetNote { get; init; }
+
+    /// <summary>Il sistema è una macchina virtuale: niente ottimizzazioni né misure significative.</summary>
+    public bool IsVirtualMachine { get; init; }
 }
 
 /// <summary>Contributo di un componente al punteggio totale.</summary>

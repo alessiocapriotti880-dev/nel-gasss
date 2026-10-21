@@ -288,7 +288,7 @@ public sealed record DisplayInfo
 
     public int Height { get; init; }
 
-    /// <summary>Frequenza di aggiornamento attuale (es. 143.98).</summary>
+    /// <summary>Frequenza di aggiornamento attuale (es. 143.98); 0 se non nota.</summary>
     public double RefreshHz { get; init; }
 
     /// <summary>Frequenza massima offerta dal monitor alla risoluzione attuale.</summary>

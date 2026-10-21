@@ -74,7 +74,7 @@
     { "id": "amd-vangogh", "name": "Van Gogh (Zen 2)", "vendor": "Amd", "family": "0x17", "models": ["0x90-0x9F"], "generation": "Steam Deck / APU custom", "year": 2022, "ipc": 1.07, "typicalBoostMHz": 3500, "segment": "LowPower" },
     { "id": "amd-zen3", "name": "Zen 3", "vendor": "Amd", "family": "0x19", "models": ["0x00-0x0F", "0x20-0x2F", "0x50-0x5F"], "generation": "Ryzen 5000", "year": 2020, "ipc": 1.27, "typicalBoostMHz": 4600, "segment": "Desktop" },
     { "id": "amd-rembrandt", "name": "Rembrandt (Zen 3+)", "vendor": "Amd", "family": "0x19", "models": ["0x40-0x4F"], "generation": "Ryzen 6000 mobile", "year": 2022, "ipc": 1.29, "typicalBoostMHz": 4600, "segment": "Mobile" },
-    { "id": "amd-zen4-hedt", "name": "Zen 4 (Threadripper/EPYC)", "vendor": "Amd", "family": "0x19", "models": ["0x10-0x1F"], "generation": "Threadripper 7000", "year": 2023, "ipc": 1.38, "typicalBoostMHz": 5100, "segment": "Workstation" },
+    { "id": "amd-zen4-hedt", "name": "Zen 4 HEDT/server", "vendor": "Amd", "family": "0x19", "models": ["0x10-0x1F"], "generation": "Threadripper 7000 / EPYC 9004", "year": 2023, "ipc": 1.38, "typicalBoostMHz": 5100, "segment": "Workstation" },
     {
       "id": "amd-zen4", "name": "Zen 4", "vendor": "Amd", "family": "0x19", "models": ["0x60-0x6F"], "generation": "Ryzen 7000", "year": 2022,
       "ipc": 1.38, "typicalBoostMHz": 5300, "segment": "Desktop",

@@ -111,7 +111,7 @@ internal static class Report
         Heading("Componenti");
         var cpu = p.Cpu;
         Line("CPU", cpu.BrandString);
-        Line("", $"{a.Cpu.ArchitectureName} ({a.Cpu.Generation}), famiglia 0x{cpu.Family:X} modello 0x{cpu.Model:X} " +
+        Line("", $"{a.Cpu.ArchitectureName}, {a.Cpu.Generation}; famiglia 0x{cpu.Family:X} modello 0x{cpu.Model:X} " +
                  $"stepping {cpu.Stepping}, microcode {(cpu.MicrocodeRevision is { } mc ? $"0x{mc:X}" : "n/d")}");
 
         foreach (var g in a.Gpus)
@@ -125,8 +125,9 @@ internal static class Report
 
         var m = a.Memory;
         var channels = m.Channels is { } ch ? $"{ch} {(ch == 1 ? "canale" : "canali")}{(m.ChannelsAssumed ? " (stimato)" : "")}" : "canali n/d";
-        Line("RAM", $"{Num(m.InstalledGB)} GB {(m.Type == MemoryType.Unknown ? "" : m.Type.ToString().ToUpperInvariant())} " +
-                    $"{m.ConfiguredMTs?.ToString() ?? "n/d"} MT/s, {m.ModuleCount} moduli, {channels}");
+        var type = m.Type == MemoryType.Unknown ? "" : $" {m.Type.ToString().ToUpperInvariant()}";
+        var dataRate = m.ConfiguredMTs is { } mts ? $"{mts} MT/s" : "velocità n/d";
+        Line("RAM", $"{Num(m.InstalledGB)} GB{type}, {dataRate}, {m.ModuleCount} moduli, {channels}");
         Line("", $"XMP/EXPO: {m.XmpExplanation}");
 
         foreach (var disk in p.Disks)
@@ -152,7 +153,8 @@ internal static class Report
         foreach (var d in p.Displays)
         {
             var max = d.MaxRefreshHz is { } mx ? $" (max {mx} Hz)" : "";
-            Line("Monitor", $"{d.Name}: {d.Width}x{d.Height} a {Num(d.RefreshHz, "0.##")} Hz{max}, {d.Connection}" +
+            var hz = d.RefreshHz > 0 ? $"{Num(d.RefreshHz, "0.##")} Hz" : "frequenza n/d";
+            Line("Monitor", $"{d.Name}: {d.Width}x{d.Height} a {hz}{max}, {d.Connection}" +
                             $"{(d.IsPrimary ? " [principale]" : "")}");
         }
 

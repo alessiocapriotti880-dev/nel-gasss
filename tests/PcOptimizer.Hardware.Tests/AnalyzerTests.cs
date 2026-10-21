@@ -355,6 +355,50 @@ public sealed class AnalyzerTests
     }
 
     [Fact]
+    public void Implausible_refresh_rate_is_not_flagged() =>
+        Assert.DoesNotContain("display-refresh-1",
+            Ids(Assess(MidPc() with { Displays = [Display("HyperVMonitor", 1024, 768, 1, 64, "1414", "5353")] })));
+
+    /// <summary>
+    /// Profilo ricostruito dallo smoke test reale della CI (Windows Server 2025 su Hyper-V, AMD EPYC):
+    /// GPU virtuale, RAM senza velocità, schermo virtuale a "1 Hz", microcode non disponibile.
+    /// </summary>
+    [Fact]
+    public void Hyper_v_virtual_machine_from_ci_is_assessed_without_false_alarms()
+    {
+        var vm = new HardwareProfile
+        {
+            Cpu = new CpuInfo
+            {
+                Vendor = CpuVendor.Amd, BrandString = "AMD EPYC 9V74 80-Core Processor", Family = 0x19, Model = 0x11, Stepping = 1,
+                PhysicalCores = 2, LogicalProcessors = 4, PerformanceCores = 2, HasSmt = true, HypervisorPresent = true,
+            },
+            Gpus = [new GpuInfo { Name = "Microsoft Hyper-V Video", Vendor = GpuVendor.Microsoft, PnpDeviceId = @"VMBUS\{DA0A7802-E377-4AAC-8E77-0558EB1073F8}\{5620E0C7-8062-4DCE-AEB7-520C7EF76171}" }],
+            Memory = new MemoryInfo { Modules = [new MemoryModule { CapacityBytes = 8 * GiB }, new MemoryModule { CapacityBytes = 8 * GiB }] },
+            Disks = [SystemDisk("Virtual_Disk NVME Premium", DiskMediaType.Ssd, DiskBusType.Nvme)],
+            Board = new BoardInfo
+            {
+                BoardManufacturer = "Microsoft Corporation", BoardProduct = "Virtual Machine", SystemManufacturer = "Microsoft Corporation",
+                SystemModel = "Virtual Machine", BiosVendor = "Microsoft Corporation", BiosVersion = "Hyper-V UEFI Release v4.1",
+                Firmware = FirmwareType.Uefi, SecureBootEnabled = false,
+            },
+            NetworkAdapters = [Ethernet(100_000_000_000) with { Description = "Microsoft Hyper-V Network Adapter #3" }],
+            Displays = [Display("HyperVMonitor", 1024, 768, 0, 64, "1414", "5353")],
+            Os = WindowsOs(26100, "Windows Server 2025 Datacenter"),
+        };
+
+        var a = Assess(vm);
+
+        Assert.True(a.Board.IsVirtualMachine);
+        Assert.Null(a.Board.Chipset);
+        Assert.Null(a.PrimaryGpu);
+        Assert.Equal(HardwareTier.Low, a.Tier.Tier);
+        Assert.Contains("system-virtual-machine", Ids(a));
+        Assert.DoesNotContain(Ids(a), id => id.StartsWith("display-", StringComparison.Ordinal));
+        Assert.Equal(XmpState.Unknown, a.Memory.Xmp);
+    }
+
+    [Fact]
     public void Fractional_refresh_rate_is_not_flagged() =>
         Assert.DoesNotContain("display-refresh-1",
             Ids(Assess(MidPc() with { Displays = [Display("TV", 1920, 1080, 59.94, 60, "10DE", "21C4")] })));

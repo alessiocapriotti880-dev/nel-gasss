@@ -226,13 +226,19 @@ public sealed class HardwareAnalyzer(HardwareDatabase db)
             vendor = system;
         }
 
+        var virtualMachine = BoardParser.LooksVirtualMachine(
+            b.SystemModel, b.SystemManufacturer, b.BoardProduct, b.BiosVendor, b.BiosVersion);
+
         // Sui portatili il "prodotto" è il codice del modello, non un chipset.
-        if (b.IsLaptop)
+        if (b.IsLaptop || virtualMachine)
         {
             return new BoardAssessment
             {
                 Vendor = vendor,
-                ChipsetNote = "Portatile: overclock e profili di memoria dipendono dal produttore e di solito non sono disponibili.",
+                IsVirtualMachine = virtualMachine,
+                ChipsetNote = virtualMachine
+                    ? "Macchina virtuale: l'hardware è emulato."
+                    : "Portatile: overclock e profili di memoria dipendono dal produttore e di solito non sono disponibili.",
             };
         }
 

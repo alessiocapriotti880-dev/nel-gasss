@@ -1,0 +1,15 @@
+<Project>
+  <!-- Impostazioni comuni a tutti i progetti della soluzione. -->
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Gli avvisi sono errori: in particolare CA1416 obbliga a marcare il codice solo-Windows. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Permette di compilare i progetti WPF/Windows anche da CI non Windows. -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <Company>PC Optimizer Pro</Company>
+    <Product>PC Optimizer Pro</Product>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+</Project>

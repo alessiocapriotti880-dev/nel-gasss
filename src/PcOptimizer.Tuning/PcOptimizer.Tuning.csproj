@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Overclock e undervolt in modalità GUIDATA: l'app non scrive mai nel BIOS, non modifica frequenze o tensioni e non
+    installa driver. Fornisce checklist del BIOS per produttore (Bios/), limiti di sicurezza fissi (Safety/), guide a
+    passi con registro dei valori provati (Guides/) e test di stabilità propri con interruzione per temperatura
+    (Stability/; GPU via Direct3D 11 in Windows/).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PcOptimizer.Tuning</RootNamespace>
+    <AllowUnsafeBlocks>false</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Hardware\PcOptimizer.Hardware.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Benchmark\PcOptimizer.Benchmark.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+    <PackageReference Include="System.Diagnostics.EventLog" Version="8.0.2" />
+    <PackageReference Include="Vortice.Direct3D11" Version="3.8.3" />
+    <PackageReference Include="Vortice.D3DCompiler" Version="3.8.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\*.json" LogicalName="Data.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PcOptimizer.Tuning.Tests" />
+  </ItemGroup>
+
+</Project>

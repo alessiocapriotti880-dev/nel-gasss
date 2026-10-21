@@ -8,8 +8,9 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 > **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni),
 > **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default),
 > **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico),
-> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima) e
-> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback).
+> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima),
+> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback) e
+> **7 – Overclock e undervolt guidati** (checklist del BIOS per produttore, limiti di sicurezza fissi, procedure a passi, test di stabilità CPU/RAM/GPU/VRAM).
 > Istruzioni complete di compilazione e test arriveranno con il modulo 9.
 
 ## Struttura
@@ -22,6 +23,7 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Benchmark` | Misure (`Windows/`): sessione ETW del kernel per DPC/ISR, timer ad alta risoluzione, PresentMon, ping, avvio, uso CPU, sensori (NVML, D3DKMT, HWiNFO); calcolo puro (`Statistics/`, `Latency/`, `Frames/`, `Comparison/`): percentili, Mann-Whitney, punteggio, confronto prima/dopo |
 | `src/PcOptimizer.Tweaks` | Catalogo degli interventi (`Catalog/`): alimentazione, servizi, avvio, attività, privacy, effetti visivi, impostazioni di gioco, monitor, MSI, rete, archiviazione, sicurezza, ripristino dei default, giochi; indicazioni guidate (`Guidance/`); manutenzione (`Maintenance/`) |
 | `src/PcOptimizer.Optimization` | Piano (`Planning/`), giudizio prima/dopo (`Judging/`), sessione con stato persistente e ripresa dopo il riavvio (`Session/`), servizi Windows (`Windows/`) |
+| `src/PcOptimizer.Tuning` | Checklist del BIOS (`Bios/`, `Data/bios-menus.json`), limiti di sicurezza (`Safety/`), procedure guidate e registro dei valori provati (`Guides/`), test di stabilità (`Stability/`; GPU con Direct3D 11 in `Windows/`) |
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 
@@ -142,6 +144,31 @@ Una sessione:
 `--confirm-security <id>`. `pcopt history` mostra ogni impostazione toccata con il valore originale; i backup `.reg`
 in `%ProgramData%\PcOptimizerPro\backups` permettono il ripristino anche senza l'app.
 
+## Overclock e undervolt (modalità guidata)
+
+```
+dotnet run --project src/PcOptimizer.Cli -- tune bios
+dotnet run --project src/PcOptimizer.Cli -- tune methods
+dotnet run --project src/PcOptimizer.Cli -- tune step cpu.intel-offset
+dotnet run --project src/PcOptimizer.Cli -- tune test gpu --minutes 10
+```
+
+L'app **non scrive mai nel BIOS, non flasha firmware e non cambia frequenze o tensioni**: indica cosa impostare e dove,
+poi verifica.
+- **Checklist del BIOS** con i percorsi dei menu di ASUS, MSI, Gigabyte, ASRock e Biostar (`Data/bios-menus.json`):
+  aggiornamento del BIOS, XMP/EXPO, Resizable BAR, profilo Intel Default Settings, TPM/Secure Boot, C-state, ventole.
+- **Intel Core 13ª/14ª gen (Raptor Lake)**: se il microcode è precedente a 0x12B l'undervolt è bloccato e la prima
+  voce è l'aggiornamento del BIOS (problema di degrado "Vmin shift").
+- **Procedure a passi**: undervolt CPU Intel (offset, passi di -10 mV fino a -100 mV) e AMD (Curve Optimizer, passi di
+  5 fino a -30), undervolt GPU sulla curva tensione/frequenza (passi di 25 mV), overclock del core (+15 MHz) e della
+  memoria della GPU (+50 MHz) senza mai aumentare la tensione, profilo XMP/EXPO. Ogni valore viene registrato prima del
+  test: se il PC si blocca, al riavvio il passo risulta "crash". Valore finale = ultimo stabile meno un passo di margine.
+- **Test di stabilità**: CPU (calcoli deterministici interi, vettoriali e SHA-256 confrontati con il risultato atteso),
+  RAM (schemi scritti e riletti su blocchi da 64 MB), GPU (shader di calcolo verificato dalla CPU) e VRAM, più gli
+  errori hardware WHEA registrati da Windows. Il test si interrompe da solo oltre i limiti fissi: CPU 100 °C (o 95 °C
+  per 10 s), GPU 90 °C, hotspot GPU 105 °C. Per le temperature della CPU serve HWiNFO con "Shared Memory Support".
+- Undervolt della CPU solo dal BIOS: con "Undervolt Protection" attiva gli strumenti di Windows non hanno effetto.
+
 ## Tabelle dati
 
 `src/PcOptimizer.Hardware/Data/` contiene architetture CPU, indici GPU, codici prodotto RAM, chipset
@@ -159,3 +186,4 @@ Gli indici di prestazione sono **approssimati** e servono solo a collocare il PC
 - `benchmarks\<data>_<etichetta>_<id>.json`: sessioni di misura
 - `sessions\current.json` e storico: sessioni di ottimizzazione
 - `profiles\games.json`: giochi indicati dall'utente
+- `profiles\tuning.json`: procedure di overclock/undervolt con i valori provati e gli esiti

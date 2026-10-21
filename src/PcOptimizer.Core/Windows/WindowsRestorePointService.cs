@@ -56,6 +56,13 @@ public sealed class WindowsRestorePointService(ILogger<WindowsRestorePointServic
 
             return new RestorePointResult(RestorePointOutcome.Failed, null, $"Creazione non riuscita (codice {code}).");
         }
+        catch (ManagementException ex) when (ex.ErrorCode is ManagementStatus.InvalidClass or ManagementStatus.InvalidNamespace)
+        {
+            log.LogWarning(ex, "Ripristino configurazione di sistema non presente.");
+            return new RestorePointResult(RestorePointOutcome.Disabled, null,
+                "Ripristino configurazione di sistema non disponibile in questa edizione di Windows (es. Windows Server): " +
+                "senza punto di ripristino l'app non applica modifiche.");
+        }
         catch (Exception ex) when (ex is ManagementException or UnauthorizedAccessException or System.Runtime.InteropServices.COMException)
         {
             log.LogError(ex, "Errore nella creazione del punto di ripristino.");

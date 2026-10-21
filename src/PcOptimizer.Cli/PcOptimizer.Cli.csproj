@@ -18,6 +18,7 @@
     <ProjectReference Include="..\PcOptimizer.Benchmark\PcOptimizer.Benchmark.csproj" />
     <ProjectReference Include="..\PcOptimizer.Tweaks\PcOptimizer.Tweaks.csproj" />
     <ProjectReference Include="..\PcOptimizer.Optimization\PcOptimizer.Optimization.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Tuning\PcOptimizer.Tuning.csproj" />
   </ItemGroup>
 
 </Project>

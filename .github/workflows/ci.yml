@@ -66,6 +66,15 @@ jobs:
           } else {
             exit 1
           }
+      # Overclock/undervolt guidati: checklist, procedure e test di stabilità brevi (GPU con il rasterizzatore WARP).
+      - name: Smoke test tuning
+        run: |
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune bios
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune methods
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test cpu --seconds 15
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test ram --seconds 20 --mb 512
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test gpu --seconds 10 --warp
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- tune test vram --seconds 10 --warp
       # Avvisi ed errori del log dell'app (con stack trace): diagnosi dei problemi visibili solo su Windows reale.
       - name: Log dell'app
         if: always()

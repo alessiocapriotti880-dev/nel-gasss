@@ -53,6 +53,12 @@ switch (command)
         return await SessionAsync(options);
     case "rollback":
         return Rollback(options);
+    case "tune":
+    {
+        using var tuneLoggers = CreateLoggerFactory();
+        return await TuneCommands.RunAsync(options, tuneLoggers, DataDirectories(options));
+    }
+
     case "history":
         SessionPrinter.PrintHistory(new PcOptimizer.Core.Journal.ChangeJournal(new AppPaths().JournalFile).Transactions);
         return 0;
@@ -112,6 +118,12 @@ static void PrintHelp()
 
         pcopt history
             Giornale delle modifiche: ogni impostazione toccata con valore originale e nuovo.
+
+        pcopt tune bios | methods | step <procedura> | record <procedura> <valore> stabile|instabile
+        pcopt tune test cpu|ram|gpu|vram [--minutes <n>]
+            Overclock e undervolt GUIDATI: l'app non scrive nel BIOS e non cambia frequenze o tensioni. "bios" mostra la
+            checklist con i menu della tua scheda madre; "step" indica il valore da impostare, esegue il test di stabilità
+            (interrotto oltre i limiti di temperatura) e registra l'esito; "test" esegue solo un test di stabilità.
 
         pcopt games list | add <percorso\gioco.exe> [--name <nome>] | remove <nome o exe>
             Giochi per gli interventi specifici (GPU preferita, priorità, ottimizzazioni a schermo intero).

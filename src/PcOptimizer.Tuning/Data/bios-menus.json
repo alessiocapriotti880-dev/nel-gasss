@@ -1,0 +1,119 @@
+{
+  // Percorsi TIPICI dei menu del BIOS per produttore. I nomi cambiano con la generazione della scheda e la versione del
+  // BIOS: l'app li presenta come indicazione, insieme alla funzione di ricerca del BIOS quando esiste.
+  // Chiavi delle impostazioni: biosUpdate, xmp, expo, rebar, intelDefaults, intelPowerLimits, intelUndervolt,
+  // undervoltProtection, amdPbo, curveOptimizer, cstates, tpmIntel, tpmAmd, secureBoot, fans, search.
+  "vendors": [
+    {
+      "vendor": "Asus",
+      "name": "ASUS",
+      "advancedModeKey": "F7",
+      "settings": {
+        "biosUpdate": "Tool > ASUS EZ Flash 3 Utility (file del BIOS su chiavetta USB FAT32)",
+        "xmp": "Ai Tweaker > Ai Overclock Tuner: XMP I (o XMP II)",
+        "expo": "Ai Tweaker > Ai Overclock Tuner: EXPO I (o EXPO II)",
+        "rebar": "Advanced > PCI Subsystem Settings > Above 4G Decoding: Enabled; Re-Size BAR Support: Enabled (o Auto)",
+        "intelDefaults": "Ai Tweaker > Intel Default Settings (o Performance Preferences): Intel Default Settings",
+        "intelPowerLimits": "Ai Tweaker > Internal CPU Power Management > Long/Short Duration Package Power Limit, IA AC/DC Load Line",
+        "intelUndervolt": "Ai Tweaker > CPU Core/Cache Voltage: Offset Mode; Offset Mode Sign: -; Offset Voltage",
+        "undervoltProtection": "Ai Tweaker > Internal CPU Power Management > Undervolt Protection",
+        "amdPbo": "Ai Tweaker > Precision Boost Overdrive (o Advanced > AMD Overclocking > Precision Boost Overdrive)",
+        "curveOptimizer": "Advanced > AMD Overclocking > Precision Boost Overdrive > Curve Optimizer: All Cores, Negative, Magnitude",
+        "cstates": "Advanced > CPU Configuration > CPU Power Management Control (Intel) / Advanced > AMD CBS > Global C-state Control (AMD)",
+        "tpmIntel": "Advanced > PCH-FW Configuration > PTT: Enable",
+        "tpmAmd": "Advanced > AMD fTPM configuration > TPM Device Selection: Firmware TPM",
+        "secureBoot": "Boot > Secure Boot > OS Type: Windows UEFI mode",
+        "fans": "Monitor > Q-Fan Configuration (o Q-Fan Control con F6)",
+        "search": "F3 (ricerca) nella modalità avanzata"
+      }
+    },
+    {
+      "vendor": "Msi",
+      "name": "MSI",
+      "advancedModeKey": "F7",
+      "settings": {
+        "biosUpdate": "M-Flash (pulsante in basso a sinistra o tasto dedicato) con il file su chiavetta USB",
+        "xmp": "OC > Extreme Memory Profile (XMP): Profile 1 (o pulsante A-XMP nella modalità EZ)",
+        "expo": "OC > Extreme Memory Profile: EXPO Profile 1 (o pulsante EXPO nella modalità EZ)",
+        "rebar": "Settings > Advanced > PCI Subsystem Settings > Above 4G memory/Crypto Currency mining: Enabled; Re-Size BAR Support: Enabled",
+        "intelDefaults": "OC > CPU Cooler Tuning / Intel Default Settings (in base alla versione del BIOS)",
+        "intelPowerLimits": "OC > Advanced CPU Configuration > Long Duration Power Limit, Short Duration Power Limit, CPU Current Limit",
+        "intelUndervolt": "OC > CPU Core Voltage Mode: Offset Mode; CPU Core Voltage Offset: - (valore)",
+        "undervoltProtection": "OC > Advanced CPU Configuration > Undervolt Protection",
+        "amdPbo": "OC > Advanced CPU Configuration > AMD Overclocking > Precision Boost Overdrive",
+        "curveOptimizer": "OC > Advanced CPU Configuration > AMD Overclocking > Precision Boost Overdrive: Advanced > Curve Optimizer: All Cores, Negative",
+        "cstates": "OC > Advanced CPU Configuration > C-State Support (Intel) / Global C-state Control (AMD)",
+        "tpmIntel": "Settings > Security > Trusted Computing > Security Device Support: Enable; PTT",
+        "tpmAmd": "Settings > Security > Trusted Computing > AMD fTPM switch: AMD CPU fTPM",
+        "secureBoot": "Settings > Security > Secure Boot",
+        "fans": "Hardware Monitor (Smart Fan Mode)",
+        "search": "Ctrl+F nella modalità avanzata"
+      }
+    },
+    {
+      "vendor": "Gigabyte",
+      "name": "Gigabyte / AORUS",
+      "advancedModeKey": "F2",
+      "settings": {
+        "biosUpdate": "Q-Flash (F8) con il file su chiavetta USB",
+        "xmp": "Tweaker > Extreme Memory Profile (X.M.P.): Profile1",
+        "expo": "Tweaker > Extreme Memory Profile (X.M.P.)/EXPO: Profile1",
+        "rebar": "Settings > IO Ports > Above 4G Decoding: Enabled; Re-Size BAR Support: Auto",
+        "intelDefaults": "Tweaker > Advanced CPU Settings > Intel Default Settings / Performance Profile: Intel Default",
+        "intelPowerLimits": "Tweaker > Advanced CPU Settings > Turbo Power Limits",
+        "intelUndervolt": "Tweaker > Advanced Voltage Settings > CPU Core Voltage Mode: Offset; Dynamic Vcore (DVID): -",
+        "undervoltProtection": "Tweaker > Advanced CPU Settings > Undervolt Protection",
+        "amdPbo": "Tweaker > Advanced CPU Settings > Precision Boost Overdrive",
+        "curveOptimizer": "Tweaker > Advanced CPU Settings > Precision Boost Overdrive > Curve Optimizer: All Cores, Negative",
+        "cstates": "Tweaker > Advanced CPU Settings > CPU Enhanced Halt (C1E), C-States Control (Intel) / Settings > AMD CBS > Global C-state Control (AMD)",
+        "tpmIntel": "Settings > Miscellaneous > Intel Platform Trust Technology (PTT): Enabled",
+        "tpmAmd": "Settings > Miscellaneous > AMD CPU fTPM: Enabled",
+        "secureBoot": "Boot > Secure Boot",
+        "fans": "Smart Fan 6 (F6)",
+        "search": "Ctrl+F nella modalità avanzata (BIOS recenti)"
+      }
+    },
+    {
+      "vendor": "AsRock",
+      "name": "ASRock",
+      "advancedModeKey": "F6",
+      "settings": {
+        "biosUpdate": "Tool > Instant Flash con il file su chiavetta USB",
+        "xmp": "OC Tweaker > DRAM Configuration > Load XMP Setting: XMP 2.0/3.0 Profile 1",
+        "expo": "OC Tweaker > DRAM Profile Configuration > DRAM Profile Setting: EXPO Profile 1",
+        "rebar": "Advanced > Chipset Configuration > Above 4G Decoding: Enabled; Re-Size BAR Support: Enabled",
+        "intelDefaults": "OC Tweaker > CPU Configuration > Intel Default Settings (o Intel Baseline Profile)",
+        "intelPowerLimits": "OC Tweaker > CPU Configuration > Long Duration Power Limit, Short Duration Power Limit",
+        "intelUndervolt": "OC Tweaker > Voltage Configuration > CPU Core/Cache Voltage: Offset Mode; Offset Voltage: -",
+        "undervoltProtection": "OC Tweaker > CPU Configuration > Undervolt Protection",
+        "amdPbo": "Advanced > AMD Overclocking > Precision Boost Overdrive",
+        "curveOptimizer": "Advanced > AMD Overclocking > Precision Boost Overdrive > Curve Optimizer: All Cores, Negative",
+        "cstates": "Advanced > CPU Configuration > CPU C States Support (Intel) / Advanced > AMD CBS > Global C-state Control (AMD)",
+        "tpmIntel": "Security > Intel(R) Platform Trust Technology: Enabled",
+        "tpmAmd": "Advanced > CPU Configuration > AMD fTPM switch: AMD CPU fTPM",
+        "secureBoot": "Security > Secure Boot",
+        "fans": "H/W Monitor > FAN-Tastic Tuning",
+        "search": "funzione di ricerca nella barra superiore (BIOS recenti)"
+      }
+    },
+    {
+      "vendor": "Biostar",
+      "name": "Biostar",
+      "advancedModeKey": "",
+      "settings": {
+        "biosUpdate": "Tool > BIO-Flasher",
+        "xmp": "O.N.E. > Memory Configuration > Memory Profile: XMP",
+        "expo": "O.N.E. > Memory Configuration > Memory Profile: EXPO",
+        "rebar": "Chipset > PCIE Configuration > Above 4G Decoding: Enabled; Re-Size BAR Support: Enabled",
+        "secureBoot": "Security > Secure Boot",
+        "fans": "Advanced > Smart Fan Control"
+      }
+    }
+  ],
+  // PC di marca (Dell, HP, Lenovo, Acer) e portatili: il BIOS di solito non ha opzioni di overclock né XMP.
+  "oem": {
+    "biosUpdate": "Usa l'aggiornamento del produttore (Dell SupportAssist / Dell Command Update, HP Support Assistant, Lenovo Vantage) o il sito di supporto con il numero di serie.",
+    "tpm": "Di solito già attivo: verifica in Sicurezza di Windows > Sicurezza dispositivi > Processore di sicurezza.",
+    "secureBoot": "Di solito già attivo: verifica con \"Informazioni di sistema\" (msinfo32) > Stato avvio protetto."
+  }
+}

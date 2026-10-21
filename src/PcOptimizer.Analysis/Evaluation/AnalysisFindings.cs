@@ -148,13 +148,14 @@ internal static class AnalysisFindings
                 "Attivare l'MSI su uno dei dispositivi elimina la condivisione (intervento proposto con misura e rollback)."));
         }
 
-        var custom = input.Interrupts.Count(i => i.CustomAffinity);
-        if (custom > 0)
+        var custom = input.Interrupts.Where(i => i.CustomAffinity).Select(i => i.Name).ToList();
+        if (custom.Count > 0)
         {
             findings.Add(new Finding("irq-custom-affinity", FindingSeverity.Info, "Interrupt",
-                $"Affinità degli interrupt personalizzata su {custom} dispositivi",
-                "È impostata probabilmente da un tool di ottimizzazione: se mal configurata può concentrare il lavoro su un " +
-                "core già occupato dal gioco. L'effetto verrà misurato."));
+                $"Affinità degli interrupt personalizzata su {Plural(custom.Count, "dispositivo", "dispositivi")}",
+                $"{string.Join(", ", custom)}. Può impostarla il driver stesso (succede con alcune schede di rete) oppure " +
+                "un tool di ottimizzazione; se mal configurata concentra il lavoro su un core già occupato dal gioco. " +
+                "L'effetto verrà misurato."));
         }
     }
 
@@ -197,7 +198,7 @@ internal static class AnalysisFindings
         if (g.FsoDisabledApps.Count > 0)
         {
             findings.Add(new Finding("fso-disabled-apps", FindingSeverity.Info, "Gioco",
-                $"Ottimizzazioni a schermo intero disattivate per {g.FsoDisabledApps.Count} programmi",
+                $"Ottimizzazioni a schermo intero disattivate per {Plural(g.FsoDisabledApps.Count, "programma", "programmi")}",
                 string.Join(", ", g.FsoDisabledApps.Take(10)) + (g.FsoDisabledApps.Count > 10 ? "..." : "") +
                 ". L'effetto di questa opzione cambia da gioco a gioco: va misurato sul titolo specifico."));
         }
@@ -205,7 +206,7 @@ internal static class AnalysisFindings
         if (g.PowerSavingGpuApps.Count > 0 && input.Context.GpuCount >= 2)
         {
             findings.Add(new Finding("gpu-power-saving-apps", FindingSeverity.Warning, "Gioco",
-                $"{g.PowerSavingGpuApps.Count} programmi impostati sulla GPU a risparmio energetico",
+                $"{Plural(g.PowerSavingGpuApps.Count, "programma impostato", "programmi impostati")} sulla GPU a risparmio energetico",
                 string.Join(", ", g.PowerSavingGpuApps.Take(10)) + ": se tra questi c'è un gioco, gira sulla grafica integrata.",
                 "Impostazioni > Sistema > Schermo > Grafica: scegli \"Prestazioni elevate\" per i giochi."));
         }
@@ -389,7 +390,7 @@ internal static class AnalysisFindings
 
         var placebo = modified.Count(m => m.Effect == TweakEffect.Placebo);
         findings.Add(new Finding("modified-settings", FindingSeverity.Info, "Sistema",
-            $"{modified.Count} impostazioni diverse dai valori predefiniti di Windows",
+            $"{Plural(modified.Count, "impostazione diversa", "impostazioni diverse")} dai valori predefiniti di Windows",
             string.Join("; ", modified.Select(m => m.Title)) + "." +
             placebo switch
             {
@@ -404,6 +405,15 @@ internal static class AnalysisFindings
     private static void AddCollection(Input input, List<Finding> findings)
     {
         var s = input.Snapshot;
+        if (input.Context.IsVirtualMachine)
+        {
+            findings.Add(new Finding("analysis-virtual-machine", FindingSeverity.Info, "Sistema",
+                "Analisi eseguita in una macchina virtuale",
+                "La configurazione di una macchina virtuale (e del suo hypervisor) non rappresenta quella di un PC da gioco: " +
+                "le osservazioni valgono solo come verifica del funzionamento.",
+                "Per ottimizzare esegui l'analisi direttamente sul PC fisico."));
+        }
+
         if (!s.IsElevated)
         {
             findings.Add(new Finding("analysis-not-elevated", FindingSeverity.Info, "Sistema",
@@ -420,6 +430,10 @@ internal static class AnalysisFindings
                 "La valutazione usa i dati disponibili; i dettagli sono nel log."));
         }
     }
+
+    /// <summary>"1 programma" / "3 programmi": il numero seguito dalla forma corretta.</summary>
+    internal static string Plural(int count, string singular, string plural) =>
+        count == 1 ? $"1 {singular}" : $"{count} {plural}";
 
     private static string ScoreFmt(double value, string format) =>
         value.ToString(format, CultureInfo.InvariantCulture).Replace('.', ',');

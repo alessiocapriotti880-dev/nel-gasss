@@ -154,7 +154,11 @@ public sealed class AnalyzerTests
     {
         var s = Clean() with { PciDevices = [Clean().PciDevices[0] with { AffinityPolicy = 4, AffinityMask = 0b100 }] };
 
-        Assert.Equal(FindingSeverity.Info, Single(Analyze(s), "irq-custom-affinity").Severity);
+        var finding = Single(Analyze(s), "irq-custom-affinity");
+
+        Assert.Equal(FindingSeverity.Info, finding.Severity);
+        Assert.EndsWith("su 1 dispositivo", finding.Title);
+        Assert.StartsWith("NVIDIA GeForce RTX 4070", finding.Detail);
     }
 
     // --- Impostazioni di gioco ---
@@ -420,6 +424,18 @@ public sealed class AnalyzerTests
     }
 
     // --- Raccolta ---
+
+    [Fact]
+    public void Virtual_machine_analysis_is_flagged()
+    {
+        Assert.Contains("analysis-virtual-machine", Ids(Analyze(Clean(), Desktop() with { IsVirtualMachine = true })));
+        Assert.DoesNotContain("analysis-virtual-machine", Ids(Analyze(Clean())));
+    }
+
+    [Fact]
+    public void Single_modified_setting_uses_singular_wording() =>
+        Assert.StartsWith("1 impostazione diversa",
+            Single(Analyze(Clean().WithRegistry(("placebo.irq8priority", "1"))), "modified-settings").Title);
 
     [Fact]
     public void Missing_privileges_and_errors_are_reported_and_findings_are_sorted()

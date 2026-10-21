@@ -11,6 +11,7 @@ using PcOptimizer.Analysis.Catalog;
 using PcOptimizer.Analysis.Evaluation;
 using PcOptimizer.Analysis.Model;
 using PcOptimizer.Analysis.Parsing;
+using PcOptimizer.Core.Parsing;
 using PcOptimizer.Core.Settings;
 using PcOptimizer.Core.Windows;
 

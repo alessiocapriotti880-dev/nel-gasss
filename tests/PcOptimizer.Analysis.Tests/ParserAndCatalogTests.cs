@@ -3,6 +3,7 @@ using PcOptimizer.Analysis.Catalog;
 using PcOptimizer.Analysis.Model;
 using PcOptimizer.Analysis.Parsing;
 using PcOptimizer.Analysis.Windows;
+using PcOptimizer.Core.Parsing;
 using PcOptimizer.Core.Settings;
 
 namespace PcOptimizer.Analysis.Tests;

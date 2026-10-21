@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Interventi: catalogo degli interventi reversibili per fascia (Catalog/), costruiti dai dati reali dell'analisi,
+    indicazioni guidate (Guidance/) e manutenzione senza rollback con anteprima (Maintenance/).
+    La raccolta dei dati aggiuntivi su Windows sta in Windows/.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PcOptimizer.Tweaks</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Hardware\PcOptimizer.Hardware.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Analysis\PcOptimizer.Analysis.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Benchmark\PcOptimizer.Benchmark.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Data\*.json" LogicalName="Data.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PcOptimizer.Tweaks.Tests" />
+  </ItemGroup>
+
+</Project>

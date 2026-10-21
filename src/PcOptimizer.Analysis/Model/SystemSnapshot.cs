@@ -58,6 +58,15 @@ public sealed record StartupEntry
 
     /// <summary>Stato come in Gestione attività (StartupApproved).</summary>
     public bool Enabled { get; init; }
+
+    /// <summary>
+    /// Nome con cui Windows registra lo stato attivo/disattivo: il nome del valore Run, il nome del file della cartella
+    /// Esecuzione automatica (con estensione) o "pacchetto\attività" per le app dello Store.
+    /// </summary>
+    public string? ApprovalName { get; init; }
+
+    /// <summary>App dello Store: valore StartupTaskState (2 attiva, 4 attivata da criteri, 1 disattivata dall'utente...).</summary>
+    public int? StoreTaskState { get; init; }
 }
 
 public sealed record ScheduledTaskEntry

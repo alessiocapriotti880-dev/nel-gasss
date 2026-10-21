@@ -2,6 +2,7 @@ using System.Globalization;
 using PcOptimizer.Analysis.Catalog;
 using PcOptimizer.Analysis.Model;
 using PcOptimizer.Analysis.Parsing;
+using PcOptimizer.Core.Parsing;
 using PcOptimizer.Core.Settings;
 
 namespace PcOptimizer.Analysis.Evaluation;

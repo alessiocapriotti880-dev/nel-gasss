@@ -43,6 +43,11 @@ jobs:
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark --duration 15 --pings 20 --label "ci dopo" --no-boot --json bench-after.json
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- benchmark list
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- compare --before bench-before.json --after bench-after.json
+      # Avvisi ed errori del log dell'app (con stack trace): diagnosi dei problemi visibili solo su Windows reale.
+      - name: Log dell'app
+        if: always()
+        shell: pwsh
+        run: Get-Content "$env:ProgramData\PcOptimizerPro\logs\*.log" | Select-String -Pattern "\[WRN\]|\[ERR\]|   at |Exception" | Select-Object -First 150
       - uses: actions/upload-artifact@v4
         if: always()
         with:

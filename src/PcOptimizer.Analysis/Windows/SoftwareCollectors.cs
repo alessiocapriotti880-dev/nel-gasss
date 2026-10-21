@@ -170,6 +170,7 @@ internal static class StartupCollector
                 ExecutablePath = exe,
                 Company = files.Company(exe),
                 Enabled = StartupStateParser.IsApprovedEnabled(approved?.GetValue(name) as byte[]),
+                ApprovalName = name,
             });
         }
     }
@@ -201,6 +202,7 @@ internal static class StartupCollector
                 ExecutablePath = target,
                 Company = files.Company(target),
                 Enabled = StartupStateParser.IsApprovedEnabled(approved?.GetValue(name) as byte[]),
+                ApprovalName = name,
             });
         }
     }
@@ -252,6 +254,8 @@ internal static class StartupCollector
                         Source = StartupSource.StoreApp,
                         Command = $"{package}!{task}",
                         Enabled = StartupStateParser.IsStoreTaskEnabled(state),
+                        ApprovalName = $@"{package}\{task}",
+                        StoreTaskState = state,
                     });
                 }
             }

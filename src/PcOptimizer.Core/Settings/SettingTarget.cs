@@ -16,6 +16,12 @@ namespace PcOptimizer.Core.Settings;
 [JsonDerivedType(typeof(RegistryValueTarget), "registry")]
 [JsonDerivedType(typeof(ServiceStartTarget), "service")]
 [JsonDerivedType(typeof(PowerSettingTarget), "power")]
+[JsonDerivedType(typeof(ScheduledTaskTarget), "task")]
+[JsonDerivedType(typeof(BcdElementTarget), "bcd")]
+[JsonDerivedType(typeof(ActivePowerSchemeTarget), "powerscheme")]
+[JsonDerivedType(typeof(PowerOverlayTarget), "poweroverlay")]
+[JsonDerivedType(typeof(DisplayRefreshTarget), "display")]
+[JsonDerivedType(typeof(FileContentTarget), "file")]
 public abstract record SettingTarget
 {
     /// <summary>Descrizione leggibile, usata in log e interfaccia.</summary>
@@ -111,4 +117,75 @@ public sealed record PowerSettingTarget(Guid Scheme, Guid SubGroup, Guid Setting
         Setting == other.Setting && Source == other.Source;
 
     public override int GetHashCode() => HashCode.Combine(Scheme, SubGroup, Setting, Source);
+}
+
+/// <summary>Stato di un'attività pianificata: valori <see cref="ScheduledTaskValues"/>; assente se l'attività non esiste.</summary>
+public sealed record ScheduledTaskTarget(string TaskPath) : SettingTarget
+{
+    public override string Describe() => $"Attività pianificata {TaskPath}";
+
+    public bool Equals(ScheduledTaskTarget? other) =>
+        other is not null && string.Equals(TaskPath, other.TaskPath, StringComparison.OrdinalIgnoreCase);
+
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(TaskPath);
+}
+
+public static class ScheduledTaskValues
+{
+    public const string Enabled = "Enabled";
+    public const string Disabled = "Disabled";
+}
+
+/// <summary>
+/// Elemento della voce di avvio corrente ({current}) nella configurazione di avvio (BCD), scritto con bcdedit.
+/// Booleani come "Yes"/"No"; assente = elemento non impostato (vale il default di Windows).
+/// </summary>
+public sealed record BcdElementTarget(string Element) : SettingTarget
+{
+    public override string Describe() => $"Configurazione di avvio: {Element}";
+
+    public bool Equals(BcdElementTarget? other) =>
+        other is not null && string.Equals(Element, other.Element, StringComparison.OrdinalIgnoreCase);
+
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Element);
+}
+
+/// <summary>Piano energetico attivo; il valore è il GUID del piano.</summary>
+public sealed record ActivePowerSchemeTarget : SettingTarget
+{
+    public override string Describe() => "Piano energetico attivo";
+}
+
+/// <summary>
+/// Modalità di alimentazione (overlay del piano Bilanciato: "Massime prestazioni" ecc.) quando il PC è collegato
+/// all'alimentatore. Il valore è il GUID dell'overlay; quello nullo indica la modalità bilanciata predefinita.
+/// </summary>
+public sealed record PowerOverlayTarget : SettingTarget
+{
+    public override string Describe() => "Modalità di alimentazione (con alimentatore)";
+}
+
+/// <summary>Frequenza di aggiornamento di un monitor (nome GDI, es. \\.\DISPLAY1); il valore è in Hz.</summary>
+public sealed record DisplayRefreshTarget(string DeviceName) : SettingTarget
+{
+    public override string Describe() => $"Frequenza di aggiornamento di {DeviceName}";
+
+    public bool Equals(DisplayRefreshTarget? other) =>
+        other is not null && string.Equals(DeviceName, other.DeviceName, StringComparison.OrdinalIgnoreCase);
+
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(DeviceName);
+}
+
+/// <summary>
+/// Un file di testo creato dall'app (solo script .cmd di avvio dei giochi): il rollback lo cancella.
+/// Il valore è il contenuto; assente = il file non esiste.
+/// </summary>
+public sealed record FileContentTarget(string FilePath) : SettingTarget
+{
+    public override string Describe() => $"File {FilePath}";
+
+    public bool Equals(FileContentTarget? other) =>
+        other is not null && string.Equals(FilePath, other.FilePath, StringComparison.OrdinalIgnoreCase);
+
+    public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(FilePath);
 }

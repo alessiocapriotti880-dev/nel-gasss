@@ -12,5 +12,11 @@ public static class WindowsSettingProviders
         new RegistrySettingProvider(),
         new ServiceStartProvider(),
         new PowerSettingProvider(),
+        new ActivePowerSchemeProvider(),
+        new PowerOverlayProvider(),
+        new ScheduledTaskProvider(),
+        new BcdProvider(),
+        new DisplayRefreshProvider(),
+        new FileContentProvider(),
     ]);
 }

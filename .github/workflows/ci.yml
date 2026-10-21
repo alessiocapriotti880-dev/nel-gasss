@@ -13,6 +13,8 @@ jobs:
   build-test:
     # Windows: le API usate dai provider (registro, SCM, powrprof, WMI) esistono solo lì.
     runs-on: windows-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -40,6 +42,15 @@ jobs:
             publish/*.exe
             publish/README.md
           if-no-files-found: error
+      # Gli artifact richiedono l'accesso a GitHub: la release si scarica anche senza account.
+      - name: Release scaricabile
+        if: github.event_name == 'push' && github.ref == 'refs/heads/pc-optimizer-pro'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          Compress-Archive -Path publish/*.exe, publish/README.md -DestinationPath PcOptimizerPro-win-x64.zip
+          gh release delete build-pc-optimizer-pro --yes --cleanup-tag 2>$null
+          gh release create build-pc-optimizer-pro PcOptimizerPro-win-x64.zip --prerelease --target $env:GITHUB_SHA --title "PC Optimizer Pro (build di prova)" --notes "Build automatica del commit $env:GITHUB_SHA. Eseguibile non firmato: SmartScreen mostra un avviso. Va avviato come amministratore."
 
       # Smoke test: esegue il rilevamento reale (WMI, registro, CPUID, API native) su Windows.
       # Il runner è una VM senza GPU né monitor: alcune parti risultano vuote, ma ogni errore

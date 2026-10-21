@@ -26,10 +26,8 @@ internal static class StorageSecurityTweaks
             ExpectedBenefit = "Prestazioni di scrittura dell'SSD stabili nel tempo.",
             Evidence = TweakEvidence.Documented,
             Recommended = true,
-            NotApplicableReason = c =>
-                !c.HasSsd() ? "Nessun SSD rilevato."
-                : env.Reg(TweakProbes.DisableDeleteNotify).Data != "1" ? "TRIM è già attivo."
-                : null,
+            NotApplicableReason = c => !c.HasSsd() ? "Nessun SSD rilevato." : null,
+            AlreadySatisfied = _ => env.Reg(TweakProbes.DisableDeleteNotify).Data != "1" ? "TRIM è già attivo." : null,
             Plan = _ => [Reg.Set(TweakProbes.All[TweakProbes.DisableDeleteNotify], 0)],
         };
 
@@ -47,7 +45,7 @@ internal static class StorageSecurityTweaks
             Evidence = TweakEvidence.RestoreDefault,
             RequiresReboot = true,
             Recommended = true,
-            NotApplicableReason = c =>
+            AlreadySatisfied = c =>
                 c.Report()?.Software.PageFileEnabled != false && (!pagingFiles.Exists || pagingFiles.AsMulti().Length > 0)
                     ? "Il file di paging è attivo."
                     : null,
@@ -77,7 +75,9 @@ internal static class StorageSecurityTweaks
             NotApplicableReason = c =>
                 env.Reg(TweakProbes.HvciPolicy).Exists ? "L'integrità della memoria è imposta da criteri di gruppo: non va modificata da qui."
                 : env.Reg(TweakProbes.HvciLocked).Data == "1" ? "L'integrità della memoria è bloccata dal firmware (UEFI lock): si disattiva solo dal BIOS/UEFI."
-                : c.Report()?.Security.HvciRunning != true && c.Snapshot().Reg("security.hvci").Data != "1" ? "L'integrità della memoria non è attiva."
+                : null,
+            AlreadySatisfied = c => c.Report()?.Security.HvciRunning != true && c.Snapshot().Reg("security.hvci").Data != "1"
+                ? "L'integrità della memoria non è attiva."
                 : null,
             Plan = _ => [Reg.Set(Reg.Machine(@"SYSTEM\CurrentControlSet\Control\DeviceGuard\Scenarios\HypervisorEnforcedCodeIntegrity", "Enabled"), 0)],
         };

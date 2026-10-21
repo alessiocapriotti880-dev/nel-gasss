@@ -7,8 +7,9 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 > Completati: **1 – Core** (interventi transazionali, giornale, rollback, backup, log),
 > **2 – Hardware** (rilevamento, classificazione in fascia, osservazioni),
 > **3 – Analisi del sistema** (configurazione di Windows in sola lettura, modifiche rispetto ai default),
-> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico) e
-> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima).
+> **4 – Benchmark** (DPC/ISR via ETW, ritardo del timer, frame time con PresentMon, rete, avvio, sensori, confronto statistico),
+> **5 – Interventi** (catalogo per fascia costruito dai dati reali, indicazioni guidate, manutenzione con anteprima) e
+> **6 – Sessione di ottimizzazione** (punto di ripristino obbligatorio, misura prima/dopo, decisione automatica, ripresa dopo il riavvio, rollback).
 > Istruzioni complete di compilazione e test arriveranno con il modulo 9.
 
 ## Struttura
@@ -20,6 +21,7 @@ ogni intervento è documentato, misurato prima/dopo e annullabile con un clic.
 | `src/PcOptimizer.Analysis` | Analisi della configurazione (`Windows/`): servizi, avvio, attività, driver, processi, alimentazione, timer, interrupt/MSI, HAGS, impostazioni di gioco, sicurezza; valutazione pura (`Evaluation/`) e catalogo del software noto (`Data/known-software.json`) |
 | `src/PcOptimizer.Benchmark` | Misure (`Windows/`): sessione ETW del kernel per DPC/ISR, timer ad alta risoluzione, PresentMon, ping, avvio, uso CPU, sensori (NVML, D3DKMT, HWiNFO); calcolo puro (`Statistics/`, `Latency/`, `Frames/`, `Comparison/`): percentili, Mann-Whitney, punteggio, confronto prima/dopo |
 | `src/PcOptimizer.Tweaks` | Catalogo degli interventi (`Catalog/`): alimentazione, servizi, avvio, attività, privacy, effetti visivi, impostazioni di gioco, monitor, MSI, rete, archiviazione, sicurezza, ripristino dei default, giochi; indicazioni guidate (`Guidance/`); manutenzione (`Maintenance/`) |
+| `src/PcOptimizer.Optimization` | Piano (`Planning/`), giudizio prima/dopo (`Judging/`), sessione con stato persistente e ripresa dopo il riavvio (`Session/`), servizi Windows (`Windows/`) |
 | `src/PcOptimizer.Cli` | `pcopt`, strumento a riga di comando per provare i moduli su un PC reale |
 | `tests/*` | Test unitari (girano anche fuori da Windows: le API di sistema sono isolate) |
 
@@ -114,6 +116,32 @@ Regole del catalogo, verificate dai test:
 - le impostazioni per gioco sono standard di Windows (preferenza GPU, compatibilità, priorità all'avvio): nessun accesso al processo del gioco;
 - ogni intervento si applica e si annulla tramite il motore transazionale (testato sull'intero catalogo).
 
+## Applicare e annullare
+
+```
+dotnet run --project src/PcOptimizer.Cli -- apply --recommended
+dotnet run --project src/PcOptimizer.Cli -- apply --ids power.plan.high-performance,gaming.background-recording-off
+dotnet run --project src/PcOptimizer.Cli -- session status
+dotnet run --project src/PcOptimizer.Cli -- rollback --all
+```
+
+Una sessione:
+1. ripristina eventuali modifiche rimaste a metà da una chiusura imprevista;
+2. crea un **punto di ripristino** (Windows ne permette uno ogni 24 ore: se ne esiste uno recente lo riusa e lo dice).
+   Senza punto di ripristino la sessione si ferma e **non modifica nulla**;
+3. misura il sistema (2 misure, per stimare la variabilità);
+4. applica gli interventi senza riavvio **uno alla volta** (giornale e backup `.reg` prima di ogni scrittura), rimisura e decide:
+   - peggiora una grandezza → annullato;
+   - migliora (statisticamente e oltre la soglia) → tenuto;
+   - nessuna differenza → tenuto solo se il comportamento è documentato, altrimenti annullato;
+   - non misurabile (privacy, frequenza del monitor) → tenuto come scelto;
+5. applica insieme quelli che richiedono il riavvio e crea un'attività pianificata che, al prossimo accesso, attende
+   3 minuti, misura e decide allo stesso modo; l'attività si cancella da sola.
+
+`--no-measure` applica senza misure né annullamenti automatici. Gli interventi che riducono la sicurezza richiedono
+`--confirm-security <id>`. `pcopt history` mostra ogni impostazione toccata con il valore originale; i backup `.reg`
+in `%ProgramData%\PcOptimizerPro\backups` permettono il ripristino anche senza l'app.
+
 ## Tabelle dati
 
 `src/PcOptimizer.Hardware/Data/` contiene architetture CPU, indici GPU, codici prodotto RAM, chipset
@@ -129,3 +157,5 @@ Gli indici di prestazione sono **approssimati** e servono solo a collocare il PC
 - `backups\<data>_<intervento>_<id>\original.reg`: valori originali, ripristinabili anche senza l'app
 - `logs\pcoptimizer-<data>.log`: log giornaliero (30 giorni)
 - `benchmarks\<data>_<etichetta>_<id>.json`: sessioni di misura
+- `sessions\current.json` e storico: sessioni di ottimizzazione
+- `profiles\games.json`: giochi indicati dall'utente

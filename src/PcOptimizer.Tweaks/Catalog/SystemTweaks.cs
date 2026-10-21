@@ -124,7 +124,7 @@ internal static class SystemTweaks
             ExpectedBenefit = "Movimento del mouse costante. Non cambia la latenza; i giochi con \"raw input\" la ignorano già.",
             Evidence = TweakEvidence.Documented,
             RequiresReboot = true,
-            NotApplicableReason = c => c.Report()?.Gaming.MouseAcceleration == false ? "Accelerazione del mouse già disattivata." : null,
+            AlreadySatisfied = c => c.Report()?.Gaming.MouseAcceleration == false ? "Accelerazione del mouse già disattivata." : null,
             Plan = _ =>
             [
                 Reg.Set(Reg.User(@"Control Panel\Mouse", "MouseSpeed", RegValueKind.String), "0"),

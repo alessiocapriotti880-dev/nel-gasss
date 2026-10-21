@@ -33,7 +33,7 @@ internal static class GamingTweaks
             Evidence = TweakEvidence.Documented,
             MeasuredBy = Measures.Frames,
             Recommended = true,
-            NotApplicableReason = _ => gaming?.GameMode != false ? "La modalità gioco è già attiva." : null,
+            AlreadySatisfied = _ => gaming?.GameMode != false ? "La modalità gioco è già attiva." : null,
             Plan = _ => [Reg.Set(RegistryProbes.GameMode.Target, 1)],
         };
 
@@ -49,7 +49,7 @@ internal static class GamingTweaks
             Evidence = TweakEvidence.Documented,
             MeasuredBy = Measures.Frames,
             Recommended = true,
-            NotApplicableReason = _ => gaming?.BackgroundRecording != true ? "La registrazione in background è già disattivata." : null,
+            AlreadySatisfied = _ => gaming?.BackgroundRecording != true ? "La registrazione in background è già disattivata." : null,
             Plan = _ => [Reg.Set(RegistryProbes.HistoricalCapture.Target, 0)],
         };
 
@@ -66,10 +66,8 @@ internal static class GamingTweaks
             Evidence = TweakEvidence.Documented,
             MeasuredBy = Measures.Frames,
             Recommended = true,
-            NotApplicableReason = c =>
-                c.WindowsBuild < WindowedOptimizationsBuild ? "Disponibile da Windows 11 22H2."
-                : gaming?.WindowedOptimizations == true ? "Già attive."
-                : null,
+            NotApplicableReason = c => c.WindowsBuild < WindowedOptimizationsBuild ? "Disponibile da Windows 11 22H2." : null,
+            AlreadySatisfied = _ => gaming?.WindowedOptimizations == true ? "Già attive." : null,
             Plan = c => [Reg.Set(RegistryProbes.DirectXGlobal.Target, WithFlag(c.Snapshot().Reg(RegistryProbes.DirectXGlobal.Id).Data, "SwapEffectUpgradeEnable", "1"))],
         };
 
@@ -91,8 +89,9 @@ internal static class GamingTweaks
             AppliesTo = TierMask.Mid | TierMask.High,
             NotApplicableReason = c =>
                 c.WindowsBuild < HagsBuild ? "Richiede Windows 10 versione 2004 o successiva."
-                : hagsCandidate is null ? (gaming?.Hags == HagsState.On ? "HAGS è già attiva." : "La scheda video o il driver non supportano HAGS.")
+                : hagsCandidate is null && gaming?.Hags != HagsState.On ? "La scheda video o il driver non supportano HAGS."
                 : null,
+            AlreadySatisfied = _ => hagsCandidate is null && gaming?.Hags == HagsState.On ? "HAGS è già attiva." : null,
             Plan = _ => [Reg.Set(RegistryProbes.HwSchMode.Target, 2)],
         };
     }

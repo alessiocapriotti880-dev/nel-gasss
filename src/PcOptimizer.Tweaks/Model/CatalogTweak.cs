@@ -110,6 +110,12 @@ public sealed class CatalogTweak : ITweak
     /// <summary>Motivo per cui non si applica a questo sistema, o null se applicabile.</summary>
     public Func<TweakContext, string?> NotApplicableReason { get; init; } = _ => null;
 
+    /// <summary>
+    /// Messaggio se il sistema è già nello stato desiderato senza bisogno di intervenire (es. modalità gioco già attiva),
+    /// o null. L'interfaccia lo mostra come "già a posto" invece che "non applicabile".
+    /// </summary>
+    public Func<TweakContext, string?> AlreadySatisfied { get; init; } = _ => null;
+
     public required Func<TweakContext, IReadOnlyList<SettingChange>> Plan { get; init; }
 
     public bool IsMeasurable => MeasuredBy.Count > 0;
@@ -122,8 +128,14 @@ public sealed class CatalogTweak : ITweak
 
     public bool IsApplicable(TweakContext context, out string? reason)
     {
-        reason = NotApplicableReason(context);
+        reason = NotApplicableReason(context) ?? AlreadySatisfied(context);
         return reason is null;
+    }
+
+    public bool IsSatisfied(TweakContext context, out string? message)
+    {
+        message = NotApplicableReason(context) is null ? AlreadySatisfied(context) : null;
+        return message is not null;
     }
 
     public IReadOnlyList<SettingChange> PlanChanges(TweakContext context) => Plan(context);

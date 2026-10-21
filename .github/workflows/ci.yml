@@ -48,6 +48,24 @@ jobs:
         run: |
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- games add "C:\Games\Prova\prova.exe" --name Prova
           dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- plan --all --json plan.json
+      # Sessione reale: su Windows Server il Ripristino configurazione di sistema non esiste, quindi la sessione deve
+      # fermarsi PRIMA di modificare qualcosa. Se invece il punto di ripristino c'è, l'intervento viene annullato subito.
+      - name: Smoke test sessione (punto di ripristino obbligatorio)
+        shell: pwsh
+        run: |
+          $out = dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- apply --ids visual.transparency-off --duration 10 --runs 2 --yes
+          $code = $LASTEXITCODE
+          $out
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- session status
+          dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- history
+          if ($code -eq 0) {
+            dotnet run --project src/PcOptimizer.Cli -c Release --no-build -- rollback --all
+          } elseif (($out -join "`n") -match "punto di ripristino") {
+            "Sessione interrotta senza modifiche, come previsto senza punto di ripristino."
+            $global:LASTEXITCODE = 0
+          } else {
+            exit 1
+          }
       # Avvisi ed errori del log dell'app (con stack trace): diagnosi dei problemi visibili solo su Windows reale.
       - name: Log dell'app
         if: always()

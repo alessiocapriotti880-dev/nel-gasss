@@ -86,6 +86,7 @@ public static class TweakCatalog
         Order = t.Order,
         Caution = t.Caution,
         NotApplicableReason = t.NotApplicableReason,
+        AlreadySatisfied = t.AlreadySatisfied,
         Plan = t.Plan,
     };
 }

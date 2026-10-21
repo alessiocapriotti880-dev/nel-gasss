@@ -29,6 +29,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PcOptimizer.Tweaks", "src\P
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PcOptimizer.Tweaks.Tests", "tests\PcOptimizer.Tweaks.Tests\PcOptimizer.Tweaks.Tests.csproj", "{05E9C058-07F4-40F0-BAE2-B1EB17838BFF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PcOptimizer.Optimization", "src\PcOptimizer.Optimization\PcOptimizer.Optimization.csproj", "{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PcOptimizer.Optimization.Tests", "tests\PcOptimizer.Optimization.Tests\PcOptimizer.Optimization.Tests.csproj", "{24F34F9E-6E88-41E2-903C-CEDE63FB1903}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -82,6 +86,14 @@ Global
 		{05E9C058-07F4-40F0-BAE2-B1EB17838BFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{05E9C058-07F4-40F0-BAE2-B1EB17838BFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{05E9C058-07F4-40F0-BAE2-B1EB17838BFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{24F34F9E-6E88-41E2-903C-CEDE63FB1903}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{24F34F9E-6E88-41E2-903C-CEDE63FB1903}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{24F34F9E-6E88-41E2-903C-CEDE63FB1903}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{24F34F9E-6E88-41E2-903C-CEDE63FB1903}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{833BEF9D-9D49-4C27-9050-F5A7EAE946A3} = {FBCD970C-7481-4177-A8AD-BB7FF5D4DB87}
@@ -95,5 +107,7 @@ Global
 		{D1315B81-8497-4FB2-B031-5B5C8C6B950D} = {E4F45F43-ADCB-4E68-9026-371F33EB7B99}
 		{E5FCCE49-800C-49AA-9522-A7853809FCBB} = {FBCD970C-7481-4177-A8AD-BB7FF5D4DB87}
 		{05E9C058-07F4-40F0-BAE2-B1EB17838BFF} = {E4F45F43-ADCB-4E68-9026-371F33EB7B99}
+		{5A979EFC-2F1A-4803-A0B5-1C2C57A4D02E} = {FBCD970C-7481-4177-A8AD-BB7FF5D4DB87}
+		{24F34F9E-6E88-41E2-903C-CEDE63FB1903} = {E4F45F43-ADCB-4E68-9026-371F33EB7B99}
 	EndGlobalSection
 EndGlobal

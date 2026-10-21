@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Sessione di ottimizzazione: piano (Planning/), punto di ripristino obbligatorio, misura prima, applicazione,
+    misura dopo e decisione mantieni/annulla basata sui dati (Judging/), ripresa dopo il riavvio (Session/).
+    La logica è pura e si prova con servizi simulati; le implementazioni Windows stanno in Windows/.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RootNamespace>PcOptimizer.Optimization</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PcOptimizer.Core\PcOptimizer.Core.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Benchmark\PcOptimizer.Benchmark.csproj" />
+    <ProjectReference Include="..\PcOptimizer.Tweaks\PcOptimizer.Tweaks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="PcOptimizer.Optimization.Tests" />
+  </ItemGroup>
+
+</Project>

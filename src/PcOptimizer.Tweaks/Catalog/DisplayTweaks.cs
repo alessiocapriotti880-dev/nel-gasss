@@ -26,7 +26,7 @@ internal static class DisplayTweaks
                 Recommended = true,
                 Caution = "Se lo schermo resta nero, attendi 15 secondi senza toccare nulla: Windows torna alla frequenza precedente. " +
                           "Per frequenze alte serve un cavo adeguato (DisplayPort o HDMI 2.0/2.1).",
-                NotApplicableReason = _ => display.CurrentHz >= max ? $"Il monitor è già alla frequenza massima ({max} Hz)." : null,
+                AlreadySatisfied = _ => display.CurrentHz >= max ? $"Il monitor è già alla frequenza massima ({max} Hz)." : null,
                 Plan = _ => [new(new DisplayRefreshTarget(display.DeviceName), SettingValue.Of((uint)max))],
             };
         }

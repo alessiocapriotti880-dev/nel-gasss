@@ -21,7 +21,9 @@ internal static class PlanPrinter
 
         foreach (var group in inspection.Tweaks.GroupBy(t => t.Group).OrderBy(g => g.Key))
         {
-            var rows = group.Select(t => (Tweak: t, Status: status(t))).Where(x => all || x.Status != TweakStatus.NotApplicable).ToList();
+            var rows = group.Select(t => (Tweak: t, Status: status(t)))
+                .Where(x => all || x.Status != TweakStatus.NotApplicable || x.Tweak.IsSatisfied(context, out _))
+                .ToList();
             if (rows.Count == 0)
             {
                 continue;
@@ -30,6 +32,7 @@ internal static class PlanPrinter
             Heading(GroupName(group.Key));
             foreach (var (t, s) in rows)
             {
+                var satisfied = t.IsSatisfied(context, out var satisfiedMessage);
                 var mark = recommended.Contains(t.Id) && s != TweakStatus.Applied ? "[x]" : "[ ]";
                 var flags = string.Join(", ", new[]
                 {
@@ -39,8 +42,12 @@ internal static class PlanPrinter
                     t.IsMeasurable ? "misurato" : "non misurabile",
                     t.AffectsSecurity ? "RIDUCE LA SICUREZZA" : null,
                 }.Where(f => f is not null));
-                Console.WriteLine($"  {mark} {StatusName(s),-14} {t.Title}  ({flags})");
-                if (s == TweakStatus.NotApplicable && t.IsApplicable(context, out var reason) == false)
+                Console.WriteLine($"  {mark} {(satisfied ? "già a posto" : StatusName(s)),-15} {t.Title}  ({flags})");
+                if (satisfied)
+                {
+                    Console.WriteLine($"        {satisfiedMessage}");
+                }
+                else if (s == TweakStatus.NotApplicable && t.IsApplicable(context, out var reason) == false)
                 {
                     Console.WriteLine($"        {reason}");
                 }

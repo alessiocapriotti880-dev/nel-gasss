@@ -16,6 +16,10 @@ using PcOptimizer.Benchmark.Windows;
 using PcOptimizer.Cli;
 using PcOptimizer.Core.Tweaks;
 using PcOptimizer.Core.Windows;
+using PcOptimizer.Optimization.Planning;
+using PcOptimizer.Optimization.Session;
+using PcOptimizer.Optimization.Windows;
+using PcOptimizer.Tweaks;
 using PcOptimizer.Tweaks.Context;
 using PcOptimizer.Tweaks.Guidance;
 using PcOptimizer.Core;
@@ -43,6 +47,15 @@ switch (command)
         return await PlanAsync(options);
     case "games":
         return Games(options);
+    case "apply":
+        return await ApplyAsync(options);
+    case "session":
+        return await SessionAsync(options);
+    case "rollback":
+        return Rollback(options);
+    case "history":
+        SessionPrinter.PrintHistory(new PcOptimizer.Core.Journal.ChangeJournal(new AppPaths().JournalFile).Transactions);
+        return 0;
     case "help" or "--help" or "-h" or "/?":
         PrintHelp();
         return 0;
@@ -55,7 +68,8 @@ switch (command)
 static void PrintHelp()
 {
     Console.WriteLine("""
-        PC Optimizer Pro - strumento a riga di comando (non modifica le impostazioni del sistema)
+        PC Optimizer Pro - strumento a riga di comando
+        Solo "apply", "session resume" e "rollback" modificano il sistema; tutti gli altri comandi sono in sola lettura.
 
         pcopt scan [--json <file>] [--data <cartella>]
             Rileva l'hardware, calcola la fascia e mostra le osservazioni.
@@ -82,6 +96,22 @@ static void PrintHelp()
         pcopt plan [--all] [--json <file>]
             Mostra il piano di ottimizzazione per la fascia del PC: interventi per sezione con stato attuale, rischio,
             evidenza e consigliati [x], più le indicazioni guidate. Sola lettura.
+
+        pcopt apply (--recommended | --ids <id>,<id>...) [--confirm-security <id>,...] [--duration <s>] [--runs <n>]
+                    [--no-measure] [--yes]
+            Applica gli interventi scelti (id da "pcopt plan --json"). Prima crea SEMPRE un punto di ripristino (senza,
+            non modifica nulla) e il backup delle impostazioni; misura il sistema, applica un intervento alla volta,
+            rimisura e annulla quelli che non portano un miglioramento misurabile. Quelli con riavvio vengono giudicati
+            dopo il riavvio (ripresa automatica all'accesso). --no-measure applica senza misurare né annullare.
+
+        pcopt session status | resume | history
+            Stato della sessione, ripresa dopo il riavvio, sessioni passate.
+
+        pcopt rollback --all | <id intervento>
+            Annulla tutti gli interventi attivi ("Ripristina tutto") o uno solo.
+
+        pcopt history
+            Giornale delle modifiche: ogni impostazione toccata con valore originale e nuovo.
 
         pcopt games list | add <percorso\gioco.exe> [--name <nome>] | remove <nome o exe>
             Giochi per gli interventi specifici (GPU preferita, priorità, ottimizzazioni a schermo intero).
@@ -276,6 +306,168 @@ static async Task<int> PlanAsync(string[] options)
         guidance,
     });
     return 0;
+}
+
+static async Task<int> ApplyAsync(string[] options)
+{
+    var paths = new AppPaths();
+    paths.EnsureCreated();
+    using var loggerFactory = CreateLoggerFactory();
+    var inspection = await Inspection.RunAsync(loggerFactory, DataDirectories(options), new GameLibraryStore(paths).Load());
+    var ids = Flag(options, "--recommended")
+        ? TweakCatalog.Recommended(inspection.Tweaks, inspection.Context).Select(t => t.Id).ToList()
+        : Option(options, "--ids")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList();
+    if (ids is null)
+    {
+        Console.Error.WriteLine("Indica gli interventi con --recommended oppure --ids <id>,<id> (id da \"pcopt plan --json\").");
+        return 2;
+    }
+
+    var plan = PlanBuilder.Build(inspection.Tweaks, ids, inspection.Context,
+        Option(options, "--confirm-security")?.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+    SessionPrinter.PrintPlan(plan);
+    if (!plan.IsValid)
+    {
+        Console.Error.WriteLine(plan.Problems.Count == 0 ? "Nessun intervento da applicare." : "Correggi la selezione e riprova.");
+        return 2;
+    }
+
+    var sessionOptions = new SessionOptions { Measure = !Flag(options, "--no-measure"), BaselineRuns = IntOption(options, "--runs") ?? 2 };
+    var duration = IntOption(options, "--duration") ?? 60;
+    Console.WriteLine(sessionOptions.Measure
+        ? $"\nOgni misura dura circa {duration} s: non usare il PC durante la sessione."
+        : "\nApplicazione senza misure: nessun annullamento automatico.");
+    if (!Flag(options, "--yes") && !Confirm("Procedere?"))
+    {
+        return 1;
+    }
+
+    var runner = CreateSessionRunner(paths, loggerFactory, duration, plan.All.Any(t => t.Group == PcOptimizer.Tweaks.Model.TweakGroup.Network));
+    using var cancel = CancelOnCtrlC();
+    var session = await runner.StartAsync(plan, inspection.Context, sessionOptions, new Progress<string>(m => Console.WriteLine($"  {m}")), cancel.Token);
+    SessionPrinter.PrintSession(session);
+    return session.Phase == SessionPhase.Aborted ? 1 : 0;
+}
+
+static async Task<int> SessionAsync(string[] options)
+{
+    var paths = new AppPaths();
+    var store = new SessionStore(paths);
+    switch (options.FirstOrDefault()?.ToLowerInvariant())
+    {
+        case "resume":
+        {
+            using var loggerFactory = CreateLoggerFactory();
+            if (store.Current() is not { Phase: SessionPhase.AwaitingReboot })
+            {
+                Console.WriteLine("Nessuna sessione in attesa di riavvio.");
+                return 0;
+            }
+
+            var inspection = await Inspection.RunAsync(loggerFactory, DataDirectories(options), new GameLibraryStore(paths).Load());
+            var runner = CreateSessionRunner(paths, loggerFactory, IntOption(options, "--duration") ?? 60, network: true);
+            using var cancel = CancelOnCtrlC();
+            var session = await runner.ResumeAsync(inspection.Tweaks, new SessionOptions(), new Progress<string>(m => Console.WriteLine($"  {m}")), cancel.Token);
+            SessionPrinter.PrintSession(session);
+            return 0;
+        }
+
+        case "history":
+            foreach (var s in store.History())
+            {
+                SessionPrinter.PrintSession(s);
+            }
+
+            return 0;
+        default:
+            if (store.Current() is { } current)
+            {
+                SessionPrinter.PrintSession(current);
+            }
+            else
+            {
+                Console.WriteLine("Nessuna sessione.");
+            }
+
+            return 0;
+    }
+}
+
+static int Rollback(string[] options)
+{
+    var paths = new AppPaths();
+    using var loggerFactory = CreateLoggerFactory();
+    var runner = CreateSessionRunner(paths, loggerFactory, 60, network: false);
+    if (Flag(options, "--all"))
+    {
+        var report = runner.RevertAll();
+        Console.WriteLine($"Annullati {report.Reverted.Count} interventi.");
+        foreach (var (tx, error) in report.Failed)
+        {
+            Console.Error.WriteLine($"Non annullato {tx}: {error}");
+        }
+
+        Console.WriteLine("Riavvia il PC se tra gli interventi annullati ce n'erano che richiedevano il riavvio.");
+        return report.Success ? 0 : 1;
+    }
+
+    if (options.FirstOrDefault(o => !o.StartsWith("--", StringComparison.Ordinal)) is not { } id)
+    {
+        Console.Error.WriteLine("Uso: pcopt rollback --all | <id intervento>  (id da \"pcopt history\")");
+        return 2;
+    }
+
+    if (!runner.RevertTweak(id))
+    {
+        Console.Error.WriteLine($"Nessun intervento attivo con id {id}.");
+        return 1;
+    }
+
+    Console.WriteLine($"Annullato: {id}.");
+    return 0;
+}
+
+static SessionRunner CreateSessionRunner(AppPaths paths, ILoggerFactory loggers, int durationSeconds, bool network)
+{
+    var journal = new PcOptimizer.Core.Journal.ChangeJournal(paths.JournalFile);
+    var engine = new TweakEngine(WindowsSettingProviders.CreateStore(), journal, new PcOptimizer.Core.Backup.BackupService(paths.Backups), loggers.CreateLogger<TweakEngine>());
+    var benchmarkOptions = new BenchmarkOptions
+    {
+        LatencyDuration = TimeSpan.FromSeconds(durationSeconds),
+        Network = network,
+        PingCount = 100,
+        Boot = false,
+    };
+    var measurer = new BenchmarkMeasurer(new BenchmarkRunner(loggers, KnownDriverCatalog.Load(), paths), benchmarkOptions);
+
+    // Con "dotnet run" il processo è dotnet.exe: la ripresa deve rilanciare la dll dell'app.
+    var process = Environment.ProcessPath ?? "pcopt.exe";
+    var isHost = Path.GetFileNameWithoutExtension(process).Equals("dotnet", StringComparison.OrdinalIgnoreCase);
+    var resume = new ScheduledTaskResumeScheduler(process,
+        isHost ? $"\"{typeof(Inspection).Assembly.Location}\" session resume" : "session resume",
+        loggers.CreateLogger<ScheduledTaskResumeScheduler>());
+
+    return new SessionRunner(new EngineApplier(engine, journal), new WindowsRestorePointService(loggers.CreateLogger<WindowsRestorePointService>()),
+        measurer, resume, new PowerContextRefresher(), new SystemClock(), new SessionStore(paths), new BenchmarkStore(paths),
+        loggers.CreateLogger<SessionRunner>());
+}
+
+static bool Confirm(string question)
+{
+    Console.Write($"{question} (s/N) ");
+    var answer = Console.ReadLine()?.Trim().ToLowerInvariant();
+    return answer is "s" or "si" or "sì" or "y" or "yes";
+}
+
+static CancellationTokenSource CancelOnCtrlC()
+{
+    var cancel = new CancellationTokenSource();
+    Console.CancelKeyPress += (_, e) =>
+    {
+        e.Cancel = true;
+        cancel.Cancel();
+    };
+    return cancel;
 }
 
 static TweakStatus SafeDetect(TweakEngine engine, ITweak tweak, TweakContext context)
